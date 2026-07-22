@@ -12,24 +12,24 @@ struct ArtworkManagerSheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: SpellbookDesign.Space.xxLarge) {
             HStack {
                 Text("Thumbnail for \(package.name)")
-                    .font(.title2)
+                    .font(SpellbookDesign.Typography.sheetTitle)
                     .bold()
                 Spacer()
                 Button("Done") { dismiss() }
                     .keyboardShortcut(.defaultAction)
             }
 
-            HStack(spacing: 14) {
+            HStack(spacing: SpellbookDesign.Space.large) {
                 SkillIconView(thumbnail: thumbnail, size: 64)
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: SpellbookDesign.Space.xSmall) {
                     Text(thumbnail.sourceKind.displayName)
-                        .font(.headline)
+                        .font(SpellbookDesign.Typography.sectionTitle)
                     Text(sourceDescription)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.body)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
                 Spacer()
             }
@@ -51,8 +51,8 @@ struct ArtworkManagerSheet: View {
                 Spacer()
             }
         }
-        .padding(24)
-        .frame(minWidth: 460, idealWidth: 520)
+        .padding(SpellbookDesign.Space.xxxLarge)
+        .frame(minWidth: SpellbookDesign.Sheet.standardWidth, idealWidth: SpellbookDesign.Sheet.wideWidth)
         .fileImporter(isPresented: $importsArtwork, allowedContentTypes: [.image]) { result in
             switch result {
             case .success(let url): importArtwork(url)

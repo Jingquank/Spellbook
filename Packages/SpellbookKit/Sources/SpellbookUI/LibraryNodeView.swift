@@ -21,8 +21,8 @@ struct SelectableSkillRow: View {
 
     var body: some View {
         SkillRowView(skill: skill)
-            .padding(.leading, isIndented ? 14 : SpellbookMetrics.sidebarHorizontalInset)
-            .padding(.trailing, SpellbookMetrics.sidebarHorizontalInset)
+            .padding(.leading, isIndented ? SpellbookDesign.Space.large : SpellbookDesign.Sidebar.horizontalInset)
+            .padding(.trailing, SpellbookDesign.Sidebar.horizontalInset)
             .sidebarSelectionBackground(isSelected: isSelected)
             .contentShape(.rect)
             .onTapGesture {

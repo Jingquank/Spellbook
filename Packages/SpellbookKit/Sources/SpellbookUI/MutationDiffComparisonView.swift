@@ -9,10 +9,10 @@ struct MutationDiffComparisonView: View {
             comparison(axis: .horizontal)
             comparison(axis: .vertical)
         }
-        .clipShape(.rect(cornerRadius: 8))
+        .clipShape(.rect(cornerRadius: SpellbookDesign.Radius.medium))
         .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(.separator, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: SpellbookDesign.Radius.medium)
+                .stroke(SpellbookDesign.Palette.separator, lineWidth: SpellbookDesign.Stroke.hairline)
         }
     }
 
@@ -21,21 +21,21 @@ struct MutationDiffComparisonView: View {
         let current = contentColumn(
             title: target.originalText == nil ? "Current · New file" : "Current · −\(target.diff.removedLineCount)",
             text: target.originalText ?? "No file exists at this location.",
-            tint: Color.red.opacity(0.045)
+            tint: SpellbookDesign.Palette.diffRemoved
         )
         let proposed = contentColumn(
             title: target.action == .remove ? "Result · Removed" : "Proposed · +\(target.diff.addedLineCount)",
             text: target.proposedText ?? "This file will move to Spellbook Recovery.",
-            tint: target.action == .remove ? Color.clear : Color.green.opacity(0.045)
+            tint: target.action == .remove ? Color.clear : SpellbookDesign.Palette.diffAdded
         )
 
         if axis == .horizontal {
-            HStack(alignment: .top, spacing: 1) {
+            HStack(alignment: .top, spacing: SpellbookDesign.Stroke.standard) {
                 current
                 proposed
             }
         } else {
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Stroke.standard) {
                 current
                 proposed
             }
@@ -45,19 +45,19 @@ struct MutationDiffComparisonView: View {
     private func contentColumn(title: String, text: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 7)
+                .font(SpellbookDesign.Typography.metadata.weight(.medium))
+                .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+                .padding(.horizontal, SpellbookDesign.Space.large)
+                .padding(.vertical, SpellbookDesign.Space.small)
             Divider()
             ScrollView([.horizontal, .vertical]) {
                 Text(text)
-                    .font(.caption.monospaced())
+                    .font(SpellbookDesign.Typography.codeMetadata)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(10)
+                    .padding(SpellbookDesign.Space.large)
             }
-            .frame(minHeight: 150, idealHeight: 190, maxHeight: 220)
+            .frame(minHeight: SpellbookDesign.Reader.diffMinimumHeight, idealHeight: SpellbookDesign.Reader.diffIdealHeight, maxHeight: SpellbookDesign.Reader.diffMaximumHeight)
         }
         .frame(maxWidth: .infinity)
         .background(tint)

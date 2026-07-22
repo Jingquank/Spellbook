@@ -24,7 +24,7 @@ struct MarkdownBlockView: View {
             Text(MarkdownAttributedStringBuilder.build(content))
                 .font(readerTextScale.headingFont(level: heading.level))
                 .bold()
-                .padding(.top, heading.level <= 2 ? 8 : 3)
+                .padding(.top, heading.level <= 2 ? SpellbookDesign.Space.medium : SpellbookDesign.Space.micro)
                 .frame(maxWidth: .infinity, alignment: .leading)
         case .code(let codeBlock):
             MarkdownCodeBlockView(codeBlock: codeBlock)
@@ -36,7 +36,7 @@ struct MarkdownBlockView: View {
             MarkdownListView(items: items, startIndex: start)
         case .thematicBreak:
             Divider()
-                .padding(.vertical, 4)
+                .padding(.vertical, SpellbookDesign.Space.xSmall)
         case .table(let table):
             MarkdownTableView(table: table)
         case .html(let html):

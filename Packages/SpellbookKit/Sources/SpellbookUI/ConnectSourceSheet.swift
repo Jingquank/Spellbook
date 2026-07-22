@@ -17,14 +17,14 @@ struct ConnectSourceSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.xSmall) {
                 Text(existingConnection == nil ? "Connect source" : "Change source")
-                    .font(.title2.bold())
+                    .font(SpellbookDesign.Typography.sheetTitle)
                 Text("Connect the package that contains \(skill.name). Updates remain manual and always show a review first.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
-            .padding(20)
+            .padding(SpellbookDesign.Sheet.contentPadding)
 
             Divider()
 
@@ -52,8 +52,8 @@ struct ConnectSourceSheet: View {
 
             HStack {
                 Text("Current installations become the initial local baseline.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
@@ -63,9 +63,9 @@ struct ConnectSourceSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(source.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
             }
-            .padding(12)
+            .padding(SpellbookDesign.Sheet.sectionPadding)
         }
-        .frame(minWidth: 460, idealWidth: 560, minHeight: 360, idealHeight: 420)
+        .frame(minWidth: SpellbookDesign.Sheet.standardWidth, idealWidth: SpellbookDesign.Sheet.xWideWidth, minHeight: SpellbookDesign.Sheet.standardHeight, idealHeight: SpellbookDesign.Sheet.sourceIdealHeight)
         .onAppear(perform: loadExistingConnection)
         .alert("Couldn’t connect source", isPresented: Binding(
             get: { errorMessage != nil },

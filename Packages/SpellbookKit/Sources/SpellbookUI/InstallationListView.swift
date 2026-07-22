@@ -6,9 +6,9 @@ struct InstallationListView: View {
     let skill: SkillRecord
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: SpellbookDesign.Space.medium) {
             Text("Installations")
-                .font(.headline)
+                .font(SpellbookDesign.Typography.sectionTitle)
 
             VStack(spacing: 0) {
                 ForEach(skill.installations) { installation in
@@ -26,14 +26,14 @@ struct InstallationListView: View {
                     .accessibilityLabel("Show \(installation.agent.displayName) installation")
                     if installation.id != skill.installations.last?.id {
                         Divider()
-                            .padding(.leading, 38)
+                            .padding(.leading, SpellbookDesign.Installation.dividerIndent)
                     }
                 }
             }
-            .background(.background.secondary, in: .rect(cornerRadius: 10))
+            .background(SpellbookDesign.Palette.grouped, in: .rect(cornerRadius: SpellbookDesign.Radius.large))
             .overlay {
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(.separator, lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: SpellbookDesign.Radius.large)
+                    .stroke(SpellbookDesign.Palette.separator, lineWidth: SpellbookDesign.Stroke.hairline)
             }
         }
     }

@@ -7,6 +7,7 @@ struct SpellbookApp: App {
     @State private var model: SpellbookModel
 
     init() {
+        SpellbookUIBootstrap.prepareDesignSystem()
         let initialStore: GRDBCatalogStore?
         let initialCatalogError: String?
         do {

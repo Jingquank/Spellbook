@@ -11,28 +11,28 @@ struct ExternalEditConflictSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.xSmall) {
                 Text("This skill changed outside Spellbook")
-                    .font(.title2.bold())
+                    .font(SpellbookDesign.Typography.sheetTitle)
                 Text("Both versions are preserved. Choose which version should remain in the editor; keeping your draft still requires a separate save review.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
-            .padding(20)
+            .padding(SpellbookDesign.Sheet.contentPadding)
 
             Divider()
 
             ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 1) {
+                HStack(alignment: .top, spacing: SpellbookDesign.Stroke.standard) {
                     versionColumn(title: "External version", text: external.text)
                     versionColumn(title: "Your draft", text: draft)
                 }
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: SpellbookDesign.Space.medium) {
                     versionColumn(title: "External version", text: external.text)
                     versionColumn(title: "Your draft", text: draft)
                 }
             }
-            .padding(20)
+            .padding(SpellbookDesign.Sheet.contentPadding)
 
             Divider()
 
@@ -50,31 +50,31 @@ struct ExternalEditConflictSheet: View {
                 }
                 .keyboardShortcut(.defaultAction)
             }
-            .padding(12)
+            .padding(SpellbookDesign.Sheet.sectionPadding)
         }
-        .frame(minWidth: 520, idealWidth: 760, minHeight: 440, idealHeight: 520)
+        .frame(minWidth: SpellbookDesign.Sheet.wideWidth, idealWidth: SpellbookDesign.Sheet.editorWidth, minHeight: SpellbookDesign.Sheet.reviewHeight, idealHeight: SpellbookDesign.Sheet.xTallHeight)
     }
 
     private func versionColumn(title: String, text: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .padding(10)
+                .font(SpellbookDesign.Typography.metadata.weight(.medium))
+                .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+                .padding(SpellbookDesign.Space.large)
             Divider()
             ScrollView([.horizontal, .vertical]) {
                 Text(text)
-                    .font(.caption.monospaced())
+                    .font(SpellbookDesign.Typography.codeMetadata)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(10)
+                    .padding(SpellbookDesign.Space.large)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(minHeight: 160)
+        .frame(minHeight: SpellbookDesign.Sheet.editorMinimumHeight)
         .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(.separator, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: SpellbookDesign.Radius.medium)
+                .stroke(SpellbookDesign.Palette.separator, lineWidth: SpellbookDesign.Stroke.hairline)
         }
     }
 }

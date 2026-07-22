@@ -31,30 +31,40 @@ struct SkillDetailView: View {
     @State private var mutationError: String?
     @State private var showsCustomPackageName = false
     @State private var customPackageName = ""
+    @AppStorage(PreferenceKey.showsManagementInspector) private var showsManagementInspector = true
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: interfaceDensity.sectionSpacing) {
-                SkillDetailHeaderView(
-                    skill: skill,
-                    thumbnail: model.thumbnail(for: skill)
-                )
-                Divider()
-                SkillMetadataView(skill: skill)
-                InstallationListView(skill: skill)
-                SkillProvenanceView(skill: skill)
-                Divider()
-                NativeMarkdownReaderView(
-                    source: model.selectedInstallation?.markdownSource ?? skill.markdownSource,
-                    assetRootURL: model.selectedInstallation?.rootURL,
-                    textScale: model.readerTextScale
-                )
+        HStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: interfaceDensity.sectionSpacing) {
+                    SkillDetailHeaderView(
+                        skill: skill,
+                        thumbnail: model.thumbnail(for: skill),
+                        onShowManagement: { showsManagementInspector = true }
+                    )
+                    Divider()
+                    NativeMarkdownReaderView(
+                        source: model.selectedInstallation?.markdownSource ?? skill.markdownSource,
+                        assetRootURL: model.selectedInstallation?.rootURL,
+                        textScale: model.readerTextScale
+                    )
+                }
+                .frame(maxWidth: readerMaximumWidth, alignment: .leading)
+                .padding(interfaceDensity.detailInset)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-            .frame(maxWidth: readerMaximumWidth, alignment: .leading)
-            .padding(interfaceDensity.detailInset)
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .accessibilityIdentifier("Skill detail")
+
+            if showsManagementInspector {
+                Divider()
+                SkillManagementInspectorView(skill: skill)
+                    .frame(
+                        minWidth: SpellbookDesign.Detail.inspectorMinimumWidth,
+                        idealWidth: SpellbookDesign.Detail.inspectorIdealWidth,
+                        maxWidth: SpellbookDesign.Detail.inspectorMaximumWidth
+                    )
+            }
         }
-        .accessibilityIdentifier("Skill detail")
         .scrollContentBackground(.visible)
         .navigationTitle(skill.name)
         .sheet(item: $presentedSheet) { sheet in
@@ -96,6 +106,16 @@ struct SkillDetailView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                Button(
+                    showsManagementInspector ? "Hide Manage" : "Show Manage",
+                    systemImage: "sidebar.trailing"
+                ) {
+                    showsManagementInspector.toggle()
+                }
+                .labelStyle(.iconOnly)
+                .help(showsManagementInspector ? "Hide Manage" : "Show Manage")
+                .accessibilityIdentifier("Toggle Manage Inspector")
+
                 if !model.selectedSkillIsProvisionalCluster,
                    model.updateCandidates.contains(where: { $0.packageIDs.contains(skill.packageID) }) {
                     Button("Review Update", systemImage: "arrow.down.circle") {
@@ -265,8 +285,8 @@ struct SkillDetailView: View {
 
     private var readerMaximumWidth: Double {
         model.readerWidth == .focused
-            ? SpellbookMetrics.focusedReaderWidth
-            : SpellbookMetrics.wideReaderWidth
+            ? SpellbookDesign.Detail.focusedReaderWidth
+            : SpellbookDesign.Detail.wideReaderWidth
     }
 
     private func revealInFinder() {

@@ -8,10 +8,10 @@ struct MetadataLinkRowView: View {
     var body: some View {
         GridRow {
             Text(label)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             Link(title, destination: url)
                 .lineLimit(1)
-                .tint(Color(nsColor: .linkColor))
+                .tint(SpellbookDesign.Palette.link)
                 .accessibilityLabel("Open \(label.lowercased()): \(title)")
         }
     }

@@ -17,4 +17,5 @@ enum PreferenceKey {
     static let skillSortMode = "library.skillSortMode"
     static let agentSortMode = "library.agentSortMode"
     static let groupsFirst = "library.groupsFirst"
+    static let showsManagementInspector = "detail.showsManagementInspector"
 }

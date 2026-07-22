@@ -39,6 +39,9 @@ let package = Package(
             dependencies: [
                 "SpellbookCore",
                 "SpellbookMarkdown"
+            ],
+            resources: [
+                .process("Resources")
             ]
         ),
         .testTarget(

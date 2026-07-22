@@ -13,8 +13,8 @@ struct MarkdownTableView: View {
                 }
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(.separator, lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: SpellbookDesign.Radius.medium)
+                    .stroke(SpellbookDesign.Palette.separator, lineWidth: SpellbookDesign.Stroke.hairline)
             }
         }
     }

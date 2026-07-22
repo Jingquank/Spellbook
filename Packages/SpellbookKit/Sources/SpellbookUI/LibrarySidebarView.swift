@@ -47,16 +47,16 @@ struct LibrarySidebarView: View {
 
             Divider()
 
-            HStack(spacing: SpellbookMetrics.compactSpacing) {
+            HStack(spacing: SpellbookDesign.Space.medium) {
                 if model.isScanning {
                     ProgressView()
                         .controlSize(.small)
                         .accessibilityLabel("Scanning skills")
                     Text("Scanning \(model.scannedFileCount) files")
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(SpellbookDesign.Palette.textPrimary)
                 } else {
                     Text("\(model.logicalSkillCount) skills · \(model.installationCount) installations")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
 
                 Spacer()
@@ -66,7 +66,7 @@ struct LibrarySidebarView: View {
                         model.reviewAllUpdates()
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(SpellbookDesign.Palette.textPrimary)
                 } else if model.isCheckingForUpdates {
                     ProgressView()
                         .controlSize(.small)
@@ -78,13 +78,12 @@ struct LibrarySidebarView: View {
                     .buttonStyle(.plain)
                     .help("Settings")
             }
-            .font(.caption)
-            .padding(.horizontal, SpellbookMetrics.standardSpacing)
-            .padding(.vertical, 5)
+            .font(SpellbookDesign.Typography.metadata)
+            .padding(.horizontal, SpellbookDesign.Space.large)
+            .padding(.vertical, SpellbookDesign.Space.xSmall)
             .frame(minHeight: interfaceDensity == .compact ? 34 : 44)
         }
-        .background(.background.secondary)
-        .searchable(text: $model.searchText, placement: .sidebar, prompt: "Search skills")
+        .background(SpellbookDesign.Palette.sidebar)
         .task(id: model.searchText) {
             await model.updateSearchResults()
         }
@@ -110,13 +109,13 @@ struct LibrarySidebarView: View {
 
     private var libraryScrollView: some View {
         ScrollView {
-            VStack(spacing: SpellbookMetrics.sidebarRowSpacing) {
+            VStack(spacing: SpellbookDesign.Sidebar.rowSpacing) {
                 ForEach(model.projection.nodes) { node in
                     LibraryNodeView(node: node)
                 }
             }
-            .padding(.horizontal, SpellbookMetrics.sidebarHorizontalInset)
-            .padding(.vertical, SpellbookMetrics.sidebarVerticalInset)
+            .padding(.horizontal, SpellbookDesign.Sidebar.horizontalInset)
+            .padding(.vertical, SpellbookDesign.Sidebar.verticalInset)
         }
         .accessibilityIdentifier("Library sidebar")
     }

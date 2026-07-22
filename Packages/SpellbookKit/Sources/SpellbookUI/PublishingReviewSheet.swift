@@ -12,45 +12,45 @@ struct PublishingReviewSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.xSmall) {
                 Text("Publish \(plan.packageName)")
-                    .font(.title2.bold())
+                    .font(SpellbookDesign.Typography.sheetTitle)
                 Text("\(plan.agent.displayName) → \(plan.target.repositoryURL.host ?? plan.target.repositoryURL.path) · \(plan.target.branch)")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
-            .padding(20)
+            .padding(SpellbookDesign.Sheet.contentPadding)
             Divider()
 
             List(plan.changes) { change in
-                HStack(spacing: 10) {
+                HStack(spacing: SpellbookDesign.Space.large) {
                     Image(systemName: change.isArtwork ? "photo" : "doc")
-                        .foregroundStyle(.secondary)
-                        .frame(width: 18)
-                    VStack(alignment: .leading, spacing: 2) {
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+                        .frame(width: SpellbookDesign.Size.sidebarArtwork)
+                    VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                         Text(change.relativePath)
-                            .font(.callout.monospaced())
+                            .font(SpellbookDesign.Typography.codeBody)
                         Text(change.isNew ? "New file" : "Modified")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(SpellbookDesign.Typography.metadata)
+                            .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     }
                     Spacer()
                 }
-                .padding(.vertical, 3)
+                .padding(.vertical, SpellbookDesign.Space.micro)
             }
             .listStyle(.inset)
 
             if hasNewFiles {
                 Divider()
                 Toggle("Approve \(newFileCount) new \(newFileCount == 1 ? "file" : "files")", isOn: $approvesNewFiles)
-                    .padding(14)
+                    .padding(SpellbookDesign.Space.large)
             }
 
             Divider()
             HStack {
                 Text("Spellbook will commit and push directly. It will stop if the remote branch moves.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                 Button("Commit and Push") {
@@ -59,9 +59,9 @@ struct PublishingReviewSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(plan.changes.isEmpty || isPublishing || (hasNewFiles && !approvesNewFiles))
             }
-            .padding(14)
+            .padding(SpellbookDesign.Space.large)
         }
-        .frame(minWidth: 620, minHeight: 460)
+        .frame(minWidth: SpellbookDesign.Sheet.reviewWidth, minHeight: SpellbookDesign.Sheet.tallHeight)
         .alert("Couldn’t publish package", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }

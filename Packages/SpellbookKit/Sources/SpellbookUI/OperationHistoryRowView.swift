@@ -7,9 +7,9 @@ struct OperationHistoryRowView: View {
 
     var body: some View {
         LabeledContent {
-            HStack(spacing: 8) {
+            HStack(spacing: SpellbookDesign.Space.medium) {
                 Text(operation.finishedAt, format: .relative(presentation: .named))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 if !operation.recoveryURLs.isEmpty {
                     Button("Reveal Recovery Copy", systemImage: "archivebox", action: revealRecoveryCopy)
                         .labelStyle(.iconOnly)
@@ -26,12 +26,12 @@ struct OperationHistoryRowView: View {
                 }
             }
         } label: {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                 Text("\(operation.kind.label) · \(operation.status.label)")
                 if let target = operation.targetURLs.first {
                     Text(target.path(percentEncoded: false))
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.codeMetadata)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }

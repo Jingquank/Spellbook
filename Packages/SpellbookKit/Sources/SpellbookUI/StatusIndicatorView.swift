@@ -10,7 +10,7 @@ struct StatusIndicatorView: View {
         Button(status.label, systemImage: symbolName, action: action)
             .labelStyle(.iconOnly)
             .buttonStyle(.plain)
-            .font(.caption)
+            .font(SpellbookDesign.Typography.metadata)
             .foregroundStyle(tint)
             .symbolVariant(differentiateWithoutColor ? .fill : .none)
             .help(status.label)
@@ -27,10 +27,10 @@ struct StatusIndicatorView: View {
 
     private var tint: Color {
         switch status {
-        case .conflict: .red
-        case .actionRequired: .orange
-        case .modified: .orange
-        case .updateAvailable: .green
+        case .conflict: SpellbookDesign.Palette.error
+        case .actionRequired: SpellbookDesign.Palette.warning
+        case .modified: SpellbookDesign.Palette.warning
+        case .updateAvailable: SpellbookDesign.Palette.update
         }
     }
 }

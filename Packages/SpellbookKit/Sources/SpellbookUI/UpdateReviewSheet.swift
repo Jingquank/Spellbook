@@ -12,14 +12,14 @@ struct UpdateReviewSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.small) {
                 Text("Review updates")
-                    .font(.title2.bold())
+                    .font(SpellbookDesign.Typography.sheetTitle)
                 Text("Clean updates can be applied together. Blocked packages remain unchanged and connected sources show every affected file.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
-            .padding(20)
+            .padding(SpellbookDesign.Sheet.contentPadding)
 
             Divider()
 
@@ -29,17 +29,17 @@ struct UpdateReviewSheet: View {
                 }
                 .toggleStyle(.checkbox)
                 .disabled(!update.canApply)
-                .padding(.vertical, 4)
+                .padding(.vertical, SpellbookDesign.Space.xSmall)
             }
             .listStyle(.inset)
-            .frame(minHeight: 260)
+            .frame(minHeight: SpellbookDesign.Sheet.updateContentMinimumHeight)
 
             Divider()
 
             HStack {
                 Text("\(selectedIDs.count) selected")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
@@ -50,7 +50,7 @@ struct UpdateReviewSheet: View {
                         Text(selectedIDs.count > 1 ? "Update Selected" : "Update")
                             .opacity(isApplying ? 0 : 1)
                             .accessibilityHidden(isApplying)
-                        HStack(spacing: 6) {
+                        HStack(spacing: SpellbookDesign.Space.small) {
                             ProgressView()
                                 .controlSize(.small)
                             Text("Updating…")
@@ -64,9 +64,9 @@ struct UpdateReviewSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(selectedIDs.isEmpty || isApplying)
             }
-            .padding(12)
+            .padding(SpellbookDesign.Sheet.sectionPadding)
         }
-        .frame(minWidth: 480, idealWidth: 620, minHeight: 360, idealHeight: 440)
+        .frame(minWidth: SpellbookDesign.Sheet.updateMinimumWidth, idealWidth: SpellbookDesign.Sheet.reviewWidth, minHeight: SpellbookDesign.Sheet.standardHeight, idealHeight: SpellbookDesign.Sheet.reviewHeight)
         .onAppear {
             selectedIDs = Set(model.reviewedUpdateCandidates.filter(\.canApply).map(\.id))
         }
@@ -78,58 +78,58 @@ struct UpdateReviewSheet: View {
     }
 
     private func updateLabel(_ update: PackageUpdate) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: SpellbookDesign.Space.xSmall) {
             HStack {
                 Text(update.displayName)
-                    .font(.headline)
+                    .font(SpellbookDesign.Typography.sectionTitle)
                 if let agent = update.targetAgent {
                     Text(agent.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.metadata)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
                 Spacer()
                 Text("\(short(update.currentRevision)) → \(short(update.targetRevision))")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.codeMetadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
 
             if let blockingReason = update.blockingReason {
                 Label(blockingReason, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             } else {
                 Text(update.repositoryURL.path(percentEncoded: false))
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.codeMetadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
 
             if !update.affectedSkillNames.isEmpty {
                 Text("\(update.affectedSkillNames.joined(separator: ", ")) · \(update.affectedInstallationCount) \(update.affectedInstallationCount == 1 ? "installation" : "installations")")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     .lineLimit(2)
             }
 
 
             if !update.offeredSkillNames.isEmpty {
                 Text("Available separately: \(update.offeredSkillNames.joined(separator: ", "))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     .lineLimit(2)
             }
 
             if let plan = update.mutationPlan {
                 DisclosureGroup("Review file changes") {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: SpellbookDesign.Space.large) {
                         ForEach(plan.targets) { target in
                             MutationPlanTargetView(target: target)
                         }
                     }
-                    .padding(.top, 6)
+                    .padding(.top, SpellbookDesign.Space.small)
                 }
-                .font(.caption)
+                .font(SpellbookDesign.Typography.metadata)
             }
         }
     }

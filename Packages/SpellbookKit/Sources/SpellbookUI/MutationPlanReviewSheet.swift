@@ -14,19 +14,19 @@ struct MutationPlanReviewSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.xSmall) {
                 Text(reviewTitle)
-                    .font(.title2.bold())
+                    .font(SpellbookDesign.Typography.sheetTitle)
                 Text("Spellbook will recheck every file, back up all existing targets, then verify each result.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
-            .padding(20)
+            .padding(SpellbookDesign.Sheet.contentPadding)
 
             Divider()
 
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
+                LazyVStack(alignment: .leading, spacing: SpellbookDesign.Space.large) {
                     ForEach(plan.targets) { target in
                         MutationPlanTargetView(target: target)
                         if target.id != plan.targets.last?.id {
@@ -34,15 +34,15 @@ struct MutationPlanReviewSheet: View {
                         }
                     }
                 }
-                .padding(20)
+                .padding(SpellbookDesign.Sheet.contentPadding)
             }
 
             Divider()
 
             HStack {
                 Text("\(plan.targets.count) \(plan.targets.count == 1 ? "file" : "files")")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
@@ -53,7 +53,7 @@ struct MutationPlanReviewSheet: View {
                         Text(commitTitle)
                             .opacity(isCommitting ? 0 : 1)
                             .accessibilityHidden(isCommitting)
-                        HStack(spacing: 6) {
+                        HStack(spacing: SpellbookDesign.Space.small) {
                             ProgressView()
                                 .controlSize(.small)
                             Text(inProgressTitle)
@@ -67,9 +67,9 @@ struct MutationPlanReviewSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(isCommitting)
             }
-            .padding(12)
+            .padding(SpellbookDesign.Sheet.sectionPadding)
         }
-        .frame(minWidth: 520, idealWidth: 780, minHeight: 440, idealHeight: 560)
+        .frame(minWidth: SpellbookDesign.Sheet.wideWidth, idealWidth: SpellbookDesign.Sheet.comparisonWidth, minHeight: SpellbookDesign.Sheet.reviewHeight, idealHeight: SpellbookDesign.Sheet.comparisonIdealHeight)
         .alert("Couldn’t apply change", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }

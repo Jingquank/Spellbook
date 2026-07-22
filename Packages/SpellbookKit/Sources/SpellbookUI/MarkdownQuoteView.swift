@@ -5,19 +5,19 @@ struct MarkdownQuoteView: View {
     let blocks: [MarkdownBlock]
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: SpellbookDesign.Space.large) {
             Image(systemName: "quote.opening")
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(SpellbookDesign.Palette.textTertiary)
                 .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.large) {
                 ForEach(blocks.indices, id: \.self) { index in
                     MarkdownBlockView(block: blocks[index])
                 }
             }
         }
-        .padding(12)
+        .padding(SpellbookDesign.Space.large)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary, in: .rect(cornerRadius: 8))
+        .background(SpellbookDesign.Palette.grouped, in: .rect(cornerRadius: SpellbookDesign.Radius.medium))
     }
 }

@@ -21,11 +21,11 @@ struct LibraryGroupView: View {
                 SelectableSkillRow(skill: skill, isIndented: true)
             }
         } label: {
-            HStack(spacing: SpellbookMetrics.compactSpacing) {
+            HStack(spacing: SpellbookDesign.Space.medium) {
                 GroupIdentityView(group: group)
                 Text(group.title)
                     .lineLimit(1)
-                Spacer(minLength: 4)
+                Spacer(minLength: SpellbookDesign.Space.xSmall)
                 if let status = group.actionableStatus {
                     StatusIndicatorView(status: status) {
                         model.activateStatus(in: group)
@@ -34,8 +34,9 @@ struct LibraryGroupView: View {
             }
             .frame(minHeight: rowHeight)
         }
-        .padding(.horizontal, 6)
-        .tint(.secondary)
+        .padding(.horizontal, SpellbookDesign.Space.small)
+        .tint(SpellbookDesign.Palette.textSecondary)
+        .accessibilityLabel("Package group \(group.title)")
     }
 
     private var rowHeight: Double {

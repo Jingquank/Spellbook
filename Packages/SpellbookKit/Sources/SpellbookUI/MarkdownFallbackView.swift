@@ -5,16 +5,15 @@ struct MarkdownFallbackView: View {
     let text: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: SpellbookDesign.Space.small) {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(SpellbookDesign.Typography.metadata)
+                .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             Text(text)
-                .font(.system(.callout, design: .monospaced))
+                .font(SpellbookDesign.Typography.codeBody)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(10)
-        .background(.quaternary, in: .rect(cornerRadius: 8))
+        .padding(SpellbookDesign.Space.large)
+        .background(SpellbookDesign.Palette.grouped, in: .rect(cornerRadius: SpellbookDesign.Radius.medium))
     }
 }
-

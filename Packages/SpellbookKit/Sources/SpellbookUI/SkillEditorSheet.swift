@@ -38,7 +38,7 @@ struct SkillEditorSheet: View {
             Divider()
             footer
         }
-        .frame(minWidth: 520, idealWidth: 760, minHeight: 480, idealHeight: 600)
+        .frame(minWidth: SpellbookDesign.Sheet.wideWidth, idealWidth: SpellbookDesign.Sheet.editorWidth, minHeight: SpellbookDesign.Sheet.editorHeight, idealHeight: SpellbookDesign.Sheet.maximumHeight)
         .task(load)
         .alert("Couldn’t save skill", isPresented: showsError) {
             Button("OK", role: .cancel) {}
@@ -71,21 +71,21 @@ struct SkillEditorSheet: View {
     }
 
     private var header: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: SpellbookDesign.Space.large) {
             AgentIconView(agent: installation.agent)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                 Text("Edit \(skill.name)")
-                    .font(.headline)
+                    .font(SpellbookDesign.Typography.sectionTitle)
                 Text(installation.entryURL.path(percentEncoded: false))
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.codeMetadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, SpellbookDesign.Space.xLarge)
+        .padding(.vertical, SpellbookDesign.Space.large)
     }
 
     private var footer: some View {
@@ -132,7 +132,7 @@ struct SkillEditorSheet: View {
             .keyboardShortcut(.defaultAction)
             .disabled(loadedContent == nil || isPlanning)
         }
-        .padding(12)
+        .padding(SpellbookDesign.Space.large)
     }
 
     @ViewBuilder
@@ -142,11 +142,11 @@ struct SkillEditorSheet: View {
                 showsExternalConflict = true
             }
             .buttonStyle(.plain)
-            .foregroundStyle(.orange)
+            .foregroundStyle(SpellbookDesign.Palette.warning)
         } else {
             Text(isDirty ? "Unsaved changes" : "Spellbook checks for outside changes before writing.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(SpellbookDesign.Typography.metadata)
+                .foregroundStyle(SpellbookDesign.Palette.textSecondary)
         }
     }
 

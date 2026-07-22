@@ -21,14 +21,14 @@ struct ApplyToAgentsSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.small) {
                 Text("Apply to other agents")
-                    .font(.title2.bold())
+                    .font(SpellbookDesign.Typography.sheetTitle)
                 Text("Choose each independent installation Spellbook may replace or create. Existing files are checked again before writing.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
-            .padding(20)
+            .padding(SpellbookDesign.Sheet.contentPadding)
 
             Divider()
 
@@ -38,11 +38,11 @@ struct ApplyToAgentsSheet: View {
                         targetLabel(for: agent)
                     }
                     .toggleStyle(.checkbox)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 11)
+                    .padding(.horizontal, SpellbookDesign.Sheet.contentPadding)
+                    .padding(.vertical, SpellbookDesign.Space.large)
 
                     if agent != candidates.last {
-                        Divider().padding(.leading, 54)
+                        Divider().padding(.leading, SpellbookDesign.Sheet.dividerIndent)
                     }
                 }
             }
@@ -51,8 +51,8 @@ struct ApplyToAgentsSheet: View {
 
             HStack {
                 Text("\(content.utf8.count.formatted()) bytes")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
@@ -62,9 +62,9 @@ struct ApplyToAgentsSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(selectedAgents.isEmpty || isApplying)
             }
-            .padding(12)
+            .padding(SpellbookDesign.Sheet.sectionPadding)
         }
-        .frame(minWidth: 460, idealWidth: 560, minHeight: 300)
+        .frame(minWidth: SpellbookDesign.Sheet.standardWidth, idealWidth: SpellbookDesign.Sheet.xWideWidth, minHeight: SpellbookDesign.Sheet.shortHeight)
         .task(loadSuggestedURLs)
         .sheet(item: $pendingPlan) { plan in
             MutationPlanReviewSheet(plan: plan) { _ in
@@ -83,18 +83,18 @@ struct ApplyToAgentsSheet: View {
         let existing = skill.installations.first { $0.agent == agent }
         let url = existing?.entryURL ?? suggestedURLs[agent]
 
-        return HStack(spacing: 10) {
+        return HStack(spacing: SpellbookDesign.Space.large) {
             AgentIconView(agent: agent)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
+                HStack(spacing: SpellbookDesign.Space.small) {
                     Text(agent.displayName)
                     Text(existing == nil ? "New" : "Installed")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.micro)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
                 Text(url?.path(percentEncoded: false) ?? "Resolving location…")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.codeMetadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }

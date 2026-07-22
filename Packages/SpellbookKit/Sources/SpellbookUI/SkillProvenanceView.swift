@@ -10,10 +10,10 @@ struct SkillProvenanceView: View {
     @State private var connectionError: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: SpellbookDesign.Space.large) {
             HStack {
                 Text("Source")
-                    .font(.headline)
+                    .font(SpellbookDesign.Typography.sectionTitle)
                 Spacer()
                 if model.sourceConnection(for: skill) == nil && !model.selectedSkillIsProvisionalCluster {
                     Button {
@@ -23,7 +23,7 @@ struct SkillProvenanceView: View {
                             Text("Find Source")
                                 .opacity(model.isFindingSource ? 0 : 1)
                                 .accessibilityHidden(model.isFindingSource)
-                            HStack(spacing: 6) {
+                            HStack(spacing: SpellbookDesign.Space.small) {
                                 ProgressView()
                                     .controlSize(.small)
                                 Text("Finding…")
@@ -40,8 +40,8 @@ struct SkillProvenanceView: View {
 
             if model.selectedSkillIsProvisionalCluster {
                 Text("These installations are folded provisionally by compatible identity. Verify a source before using remote updates, or split them from the More menu.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             } else if let provenance = model.provenance(for: skill) {
                 Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 6) {
                     sourceRow("Origin", url: provenance.originURL)
@@ -64,11 +64,11 @@ struct SkillProvenanceView: View {
                         valueRow("Artwork", value: artwork.declaredPath)
                     }
                 }
-                .font(.callout)
+                .font(SpellbookDesign.Typography.body)
             } else {
                 Text("No verified source is connected. Spellbook keeps local files independent until you confirm a match.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.body)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
 
             ForEach(model.candidates(for: skill)) { candidate in
@@ -80,37 +80,18 @@ struct SkillProvenanceView: View {
                 value: candidateIDs
             )
 
-            if !model.evidence(for: skill).isEmpty {
-                DisclosureGroup("Evidence") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(model.evidence(for: skill)) { evidence in
-                            HStack(alignment: .firstTextBaseline) {
-                                Text(evidence.confidence.label)
-                                    .font(.caption.weight(.medium))
-                                    .frame(width: 52, alignment: .leading)
-                                Text(evidence.explanation)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .padding(.top, 6)
-                }
-                .font(.callout)
-            }
-
             if model.sourceConnection(for: skill) == nil && !model.selectedSkillIsProvisionalCluster {
                 Button("Search file contents…") {
                     showsDeepSearchConsent = true
                 }
                 .buttonStyle(.link)
-                .font(.callout)
+                .font(SpellbookDesign.Typography.body)
             }
 
             if let error = model.sourceDiscoveryError ?? connectionError {
                 Label(error, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
         }
         .alert("Send these terms to GitHub code search?", isPresented: $showsDeepSearchConsent) {
@@ -146,28 +127,28 @@ struct SkillProvenanceView: View {
     private func sourceRow(_ label: String, url: URL?) -> some View {
         if let url {
             GridRow {
-                Text(label).foregroundStyle(.secondary)
+                Text(label).foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 Link(url.host ?? url.absoluteString, destination: url)
-                    .tint(Color(nsColor: .linkColor))
+                    .tint(SpellbookDesign.Palette.link)
             }
         }
     }
 
     private func valueRow(_ label: String, value: String) -> some View {
         GridRow {
-            Text(label).foregroundStyle(.secondary)
+            Text(label).foregroundStyle(SpellbookDesign.Palette.textSecondary)
             Text(value).textSelection(.enabled)
         }
     }
 
     private func candidateRow(_ candidate: SourceCandidate) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            VStack(alignment: .leading, spacing: 3) {
+        HStack(alignment: .top, spacing: SpellbookDesign.Space.large) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                 Text(candidate.sourceURL.host.map { "\($0)\(candidate.sourceURL.path)" } ?? candidate.sourceURL.absoluteString)
                     .lineLimit(1)
                 Text("\(candidate.confidence.label) · \(candidate.explanation)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     .lineLimit(2)
             }
             Spacer()
@@ -185,7 +166,7 @@ struct SkillProvenanceView: View {
             }
             .buttonStyle(.bordered)
         }
-        .padding(10)
-        .background(.quaternary.opacity(0.55), in: .rect(cornerRadius: 8))
+        .padding(SpellbookDesign.Space.large)
+        .background(SpellbookDesign.Palette.grouped, in: .rect(cornerRadius: SpellbookDesign.Radius.medium))
     }
 }

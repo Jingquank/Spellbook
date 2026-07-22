@@ -8,51 +8,51 @@ struct InstallationRowView: View {
     let isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: SpellbookDesign.Space.large) {
             AgentIconView(agent: installation.agent)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                 Text(installation.agent.displayName)
-                    .font(.callout)
+                    .font(SpellbookDesign.Typography.rowLabel)
                 Text(installation.entryURL.path(percentEncoded: false))
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.primary)
+                    .font(SpellbookDesign.Typography.codeMetadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .textSelection(.enabled)
                 if let revision = sourceState?.installedRevision {
                     Text("Revision \(revision.prefix(10))")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.codeMetadata)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
             }
 
             Spacer(minLength: 8)
 
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: SpellbookDesign.Space.micro) {
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.caption)
+                        .font(SpellbookDesign.Typography.metadata)
                         .accessibilityHidden(true)
                 }
                 Text(installation.localState.label)
-                    .font(.caption.weight(installation.localState == .clean ? .regular : .medium))
+                    .font(SpellbookDesign.Typography.metadata.weight(installation.localState == .clean ? .regular : .medium))
                 if let managedOperation {
                     Text(managedOperation.kind.label)
-                        .font(.caption)
+                        .font(SpellbookDesign.Typography.metadata)
                     Text(managedOperation.finishedAt, format: .relative(presentation: .named))
-                        .font(.caption)
+                        .font(SpellbookDesign.Typography.metadata)
                 } else if let observedModifiedAt = installation.observedModifiedAt {
                     Text("Observed change")
-                        .font(.caption)
+                        .font(SpellbookDesign.Typography.metadata)
                     Text(observedModifiedAt, format: .relative(presentation: .named))
-                        .font(.caption)
+                        .font(SpellbookDesign.Typography.metadata)
                 }
             }
-            .foregroundStyle(.primary)
+            .foregroundStyle(SpellbookDesign.Palette.textPrimary)
         }
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
-        .background(.primary.opacity(isSelected ? 0.06 : 0))
+        .padding(.horizontal, SpellbookDesign.Installation.horizontalInset)
+        .padding(.vertical, SpellbookDesign.Space.medium)
+        .background(isSelected ? SpellbookDesign.Palette.selection : .clear)
     }
 }

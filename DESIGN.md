@@ -14,7 +14,7 @@ These are principles, not skins. Spellbook remains recognizably native to macOS.
 
 ## Color
 
-Color strategy: Restrained. The OKLCH values below define visual targets for design review. SwiftUI implementation should map them to semantic macOS colors such as window background, control background, label, secondary label, separator, selected content background, and system status colors so vibrancy, contrast, and accessibility appearances remain native.
+Color strategy: restrained and app-owned. The OKLCH values below remain the design targets; `SpellbookDesign.Palette` resolves them to a custom neutral light, dark, and Increase Contrast palette rather than inheriting arbitrary platform accent colors.
 
 - `canvas`: `oklch(0.985 0.004 75)` light, `oklch(0.185 0.006 255)` dark
 - `sidebar`: `oklch(0.965 0.005 75)` light, `oklch(0.215 0.007 255)` dark
@@ -29,9 +29,10 @@ Skill thumbnails and official agent logos retain their own color. Status color a
 
 ## Typography
 
-- Interface: SF Pro through the macOS system font.
-- Code and paths: SF Mono through the macOS monospaced system font.
-- Default interface scale: compact native scale with 12 pt metadata, 13 pt rows and controls, 15 pt section labels, and 22 to 24 pt detail titles.
+- Interface and prose: bundled Schibsted Grotesk. Core Text supplies per-glyph fallback for unsupported scripts.
+- Code, paths, revisions, hashes, diffs, aligned tables, and editor text: bundled Commit Mono with programming ligatures disabled.
+- SF remains only in macOS-owned menus, alerts, tooltips, picker menus, and window chrome.
+- Default interface scale: 12 pt metadata, 14 pt rows and controls, 15 pt section labels, and 22 to 24 pt titles.
 - Reader prose: 15 pt default with a 1.5 to 1.6 line-height equivalent and a 68 to 74 character measure.
 - Hierarchy comes from weight, spacing, and a restrained scale. Display typography is not used inside the app shell.
 
@@ -54,7 +55,7 @@ Whitespace separates conceptual groups. Do not wrap every section in a card. Use
 - Native macOS window with a compact toolbar and a two-pane `NavigationSplitView` structure.
 - Sidebar target width: 240 to 280 pt, resizable within sensible limits.
 - Detail pane fills the remaining space and scrolls independently.
-- The sidebar begins with search and a compact Skill-first / Agent-first view control.
+- The sidebar begins with an app-owned search field and adjacent Library View menu. A second status-led row shows live library health with persistent Scan and Update affordances.
 - Navigation uses short rows, small identity artwork, disclosure chevrons only where children exist, and one trailing actionable state indicator at most.
 - The detail header is open and typographic. Metadata sits in concise labeled rows or columns before the Markdown reader.
 
@@ -72,9 +73,9 @@ Used automatically for packages containing multiple skills. It is a compact disc
 
 Used in Agent-first view. It uses the official agent logo and folds installed skills underneath it, matching the structure of the ASIDE reference.
 
-### Detail header
+### Detail header and management inspector
 
-Shows the skill name, short description, author, source website or repository, package, last installed or updated time, local modification state, installation locations, and installed agents. Agent versions are fields here in Skill-first view.
+The Adaptive Resolution Header shows identity, a bounded summary, and one compact installation/source/state line. A single state-resolution row leads into the Markdown reader. Installations, provenance, candidates, and grouped Evidence live in an independently scrolling trailing Manage inspector that can be collapsed from the toolbar without changing reader width preferences.
 
 ### Markdown reader
 
@@ -121,3 +122,5 @@ Reduced motion, contrast, and accessibility appearance settings follow macOS aut
 - No nested cards in details or settings.
 - No decorative magic particles, fantasy ornament, or medieval styling despite the name Spellbook.
 - No multiple status badges competing inside a sidebar row.
+
+Exact implementation values and exceptions live in [docs/DESIGN-TOKENS.md](docs/DESIGN-TOKENS.md). Architecture decisions live in [docs/adr](docs/adr).

@@ -11,12 +11,12 @@ struct PublishingDestinationSheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: SpellbookDesign.Space.xLarge) {
             Text("Publishing destination")
-                .font(.title2.bold())
+                .font(SpellbookDesign.Typography.sheetTitle)
             Text("Override the personal Spellbook repository for this package. Spellbook only connects to an existing repository.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                .font(SpellbookDesign.Typography.body)
+                .foregroundStyle(SpellbookDesign.Palette.textSecondary)
 
             Form {
                 TextField("Git URL or absolute local path", text: $repository)
@@ -26,8 +26,8 @@ struct PublishingDestinationSheet: View {
 
             if let errorMessage {
                 Label(errorMessage, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
 
             HStack {
@@ -46,8 +46,8 @@ struct PublishingDestinationSheet: View {
                     .disabled(repository.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
-        .padding(20)
-        .frame(minWidth: 420, idealWidth: 500, minHeight: 280, idealHeight: 320)
+        .padding(SpellbookDesign.Sheet.contentPadding)
+        .frame(minWidth: SpellbookDesign.Sheet.compactWidth, idealWidth: SpellbookDesign.Sheet.sourceIdealWidth, minHeight: SpellbookDesign.Sheet.compactHeight, idealHeight: SpellbookDesign.Sheet.destinationIdealHeight)
         .task { load() }
     }
 

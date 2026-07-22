@@ -31,29 +31,29 @@ extension InterfaceDensity {
 
     var libraryRowHeight: Double {
         switch self {
-        case .compact: SpellbookMetrics.compactRowHeight
-        case .comfortable: SpellbookMetrics.comfortableRowHeight
+        case .compact: SpellbookDesign.Sidebar.compactRowHeight
+        case .comfortable: SpellbookDesign.Sidebar.comfortableRowHeight
         }
     }
 
     var settingsRowHeight: Double {
         switch self {
-        case .compact: 44
-        case .comfortable: 52
+        case .compact: SpellbookDesign.Settings.compactRowHeight
+        case .comfortable: SpellbookDesign.Settings.comfortableRowHeight
         }
     }
 
     var detailInset: Double {
         switch self {
-        case .compact: SpellbookMetrics.detailInset
-        case .comfortable: SpellbookMetrics.detailInset + 6
+        case .compact: SpellbookDesign.Detail.compactInset
+        case .comfortable: SpellbookDesign.Detail.comfortableInset
         }
     }
 
     var sectionSpacing: Double {
         switch self {
-        case .compact: SpellbookMetrics.sectionSpacing
-        case .comfortable: SpellbookMetrics.sectionSpacing + 6
+        case .compact: SpellbookDesign.Detail.compactSectionSpacing
+        case .comfortable: SpellbookDesign.Detail.comfortableSectionSpacing
         }
     }
 }

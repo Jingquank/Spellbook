@@ -6,30 +6,30 @@ struct SettingsSidebarView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Settings")
-                .font(.title3)
+                .font(SpellbookDesign.Typography.sectionTitle)
                 .bold()
-                .padding(.horizontal, SpellbookMetrics.standardSpacing)
-                .padding(.top, SpellbookMetrics.sidebarHeaderTopInset)
-                .padding(.bottom, SpellbookMetrics.sidebarHeaderBottomInset)
+                .padding(.horizontal, SpellbookDesign.Space.large)
+                .padding(.top, SpellbookDesign.Sidebar.headerTopInset)
+                .padding(.bottom, SpellbookDesign.Sidebar.headerBottomInset)
 
             ScrollView {
-                LazyVStack(spacing: SpellbookMetrics.sidebarRowSpacing) {
+                LazyVStack(spacing: SpellbookDesign.Sidebar.rowSpacing) {
                     ForEach(SettingsSectionID.allCases) { section in
                         SidebarSelectionButton(
                             isSelected: selection == section,
                             action: { selection = section }
                         ) {
                             Label(section.label, systemImage: section.symbolName)
-                                .font(.callout)
+                                .font(SpellbookDesign.Typography.rowLabel)
                         }
                         .accessibilityIdentifier("Settings \(section.label)")
                     }
                 }
-                .padding(.horizontal, SpellbookMetrics.sidebarHorizontalInset)
-                .padding(.vertical, SpellbookMetrics.sidebarVerticalInset)
+                .padding(.horizontal, SpellbookDesign.Sidebar.horizontalInset)
+                .padding(.vertical, SpellbookDesign.Sidebar.verticalInset)
             }
             .accessibilityIdentifier("Settings sidebar")
         }
-        .background(.background.secondary)
+        .background(SpellbookDesign.Palette.sidebar)
     }
 }

@@ -1,15 +1,13 @@
 import SwiftUI
 
 struct SidebarSelectionBackground: ViewModifier {
-    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
-
     let isSelected: Bool
     @State private var isHovering = false
 
     func body(content: Content) -> some View {
         content
             .background(
-                RoundedRectangle(cornerRadius: SpellbookMetrics.sidebarRowCornerRadius)
+                RoundedRectangle(cornerRadius: SpellbookDesign.Sidebar.rowRadius)
                     .fill(rowFill)
             )
             .onHover { isHovering = $0 }
@@ -17,10 +15,10 @@ struct SidebarSelectionBackground: ViewModifier {
 
     private var rowFill: Color {
         if isSelected {
-            return .primary.opacity(colorSchemeContrast == .increased ? 0.17 : 0.085)
+            return SpellbookDesign.Palette.selection
         }
         if isHovering {
-            return .primary.opacity(0.04)
+            return SpellbookDesign.Palette.hover
         }
         return .clear
     }

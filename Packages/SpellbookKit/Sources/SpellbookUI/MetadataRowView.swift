@@ -7,7 +7,7 @@ struct MetadataRowView: View {
     var body: some View {
         GridRow {
             Text(label)
-                .foregroundStyle(.primary)
+                .foregroundStyle(SpellbookDesign.Palette.textPrimary)
             Text(value)
                 .textSelection(.enabled)
         }

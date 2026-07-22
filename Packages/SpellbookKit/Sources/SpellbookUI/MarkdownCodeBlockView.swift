@@ -10,8 +10,8 @@ struct MarkdownCodeBlockView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(codeBlock.language?.isEmpty == false ? codeBlock.language ?? "Code" : "Code")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
 
                 Spacer()
 
@@ -20,18 +20,18 @@ struct MarkdownCodeBlockView: View {
                     .buttonStyle(.plain)
                     .help("Copy code")
             }
-            .padding(.horizontal, 12)
-            .frame(height: 34)
+            .padding(.horizontal, SpellbookDesign.Space.large)
+            .frame(height: SpellbookDesign.Reader.codeHeaderHeight)
 
             Divider()
 
             codeContent
-                .padding(12)
+                .padding(SpellbookDesign.Space.large)
         }
-        .background(.background.secondary, in: .rect(cornerRadius: 10))
+        .background(SpellbookDesign.Palette.grouped, in: .rect(cornerRadius: SpellbookDesign.Radius.large))
         .overlay {
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(.separator, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: SpellbookDesign.Radius.large)
+                .stroke(SpellbookDesign.Palette.separator, lineWidth: SpellbookDesign.Stroke.hairline)
         }
     }
 

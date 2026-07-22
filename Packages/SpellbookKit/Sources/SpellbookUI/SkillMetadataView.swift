@@ -17,7 +17,7 @@ struct SkillMetadataView: View {
             MetadataRowView(label: "Installed for", value: installedAgents)
             MetadataRowView(label: "Installations", value: skill.installations.count.formatted())
         }
-        .font(.callout)
+        .font(SpellbookDesign.Typography.body)
     }
 
     private var installedAgents: String {
@@ -27,4 +27,3 @@ struct SkillMetadataView: View {
             .joined(separator: ", ")
     }
 }
-

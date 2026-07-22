@@ -4,7 +4,9 @@ import SwiftUI
 public struct SpellbookRootView: View {
     @Environment(SpellbookModel.self) private var model
 
-    public init() {}
+    public init() {
+        SpellbookDesign.registerFonts()
+    }
 
     public var body: some View {
         @Bindable var model = model
@@ -12,16 +14,19 @@ public struct SpellbookRootView: View {
         NavigationSplitView {
             LibrarySidebarView()
                 .navigationSplitViewColumnWidth(
-                    min: SpellbookMetrics.sidebarMinimumWidth,
-                    ideal: SpellbookMetrics.sidebarIdealWidth,
-                    max: SpellbookMetrics.sidebarMaximumWidth
+                    min: SpellbookDesign.Sidebar.minimumWidth,
+                    ideal: SpellbookDesign.Sidebar.idealWidth,
+                    max: SpellbookDesign.Sidebar.maximumWidth
                 )
         } detail: {
             SkillDetailContainerView()
         }
         .navigationSplitViewStyle(.balanced)
+        .font(SpellbookDesign.Typography.body)
+        .foregroundStyle(SpellbookDesign.Palette.textPrimary)
+        .background(SpellbookDesign.Palette.canvas)
         .interfaceAppearance(textScale: model.textScale, density: model.density)
-        .tint(Color(nsColor: .secondaryLabelColor))
+        .tint(SpellbookDesign.Palette.focus)
         .preferredColorScheme(preferredColorScheme)
         .task(model.start)
         .sheet(isPresented: $model.showsUpdateReview) {

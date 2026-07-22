@@ -10,13 +10,13 @@ struct AgentSettingsView: View {
                 ForEach(AgentKind.allCases) { agent in
                     LabeledContent {
                         let roots = model.discoveryRoots.filter { $0.agent == agent }
-                        VStack(alignment: .trailing, spacing: 2) {
+                        VStack(alignment: .trailing, spacing: SpellbookDesign.Space.micro) {
                             Text("\(roots.count) \(roots.count == 1 ? "folder" : "folders")")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                             ForEach(roots.prefix(2)) { root in
                                 Text(root.url.path(percentEncoded: false))
-                                    .font(.caption.monospaced())
-                                    .foregroundStyle(.tertiary)
+                                    .font(SpellbookDesign.Typography.codeMetadata)
+                                    .foregroundStyle(SpellbookDesign.Palette.textTertiary)
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                             }

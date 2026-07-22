@@ -4,24 +4,29 @@ public struct SpellbookSettingsView: View {
     @Environment(SpellbookModel.self) private var model
     @State private var selection: SettingsSectionID? = .appearance
 
-    public init() {}
+    public init() {
+        SpellbookDesign.registerFonts()
+    }
 
     public var body: some View {
         NavigationSplitView {
             SettingsSidebarView(selection: $selection)
                 .navigationSplitViewColumnWidth(
-                    min: SpellbookMetrics.sidebarMinimumWidth,
-                    ideal: SpellbookMetrics.sidebarIdealWidth,
-                    max: SpellbookMetrics.sidebarMaximumWidth
+                    min: SpellbookDesign.Sidebar.minimumWidth,
+                    ideal: SpellbookDesign.Sidebar.idealWidth,
+                    max: SpellbookDesign.Sidebar.maximumWidth
                 )
         } detail: {
             settingsDetail
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .navigationSplitViewStyle(.balanced)
+        .font(SpellbookDesign.Typography.body)
+        .foregroundStyle(SpellbookDesign.Palette.textPrimary)
+        .background(SpellbookDesign.Palette.canvas)
         // SwiftUI's Settings scene otherwise forces an expanded two-row toolbar.
         .background(WindowToolbarStyleConfigurator(toolbarStyle: .unified))
-        .tint(Color(nsColor: .secondaryLabelColor))
+        .tint(SpellbookDesign.Palette.focus)
         .preferredColorScheme(preferredColorScheme)
     }
 

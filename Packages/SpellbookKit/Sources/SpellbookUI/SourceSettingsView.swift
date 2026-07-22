@@ -27,7 +27,7 @@ struct SourceSettingsView: View {
 
                 if customRoots.isEmpty {
                     Text("No additional folders")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 } else {
                     ForEach(customRoots) { root in
                         LabeledContent {
@@ -38,11 +38,11 @@ struct SourceSettingsView: View {
                             .buttonStyle(.plain)
                             .help("Stop scanning this folder")
                         } label: {
-                            VStack(alignment: .leading, spacing: 2) {
+                            VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                                 Text(root.agent.displayName)
                                 Text(root.url.path(percentEncoded: false))
-                                    .font(.caption.monospaced())
-                                    .foregroundStyle(.secondary)
+                                    .font(SpellbookDesign.Typography.codeMetadata)
+                                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                             }
@@ -52,8 +52,8 @@ struct SourceSettingsView: View {
 
                 if let rootError = model.rootError ?? importerError {
                     Label(rootError, systemImage: "exclamationmark.triangle")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.metadata)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
             }
 
@@ -62,15 +62,15 @@ struct SourceSettingsView: View {
                 LabeledContent("Verified packages", value: "\(verifiedPackageCount)")
                 LabeledContent("Needs review", value: "\(reviewCandidateCount)")
                 Text("Spellbook checks installer receipts, symlinks, enclosing Git history, manifests, and frontmatter. GitHub search is available from each skill when local evidence is not enough.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
 
             Section("Source backtracking") {
                 Toggle("Prefer repository titles for all packages", isOn: $model.preferRepositoryTitles)
                 Text("Generic labels such as “Skills” are replaced automatically. This option also uses repository titles for packages that already have a useful local name.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
 
                 ForEach(model.sourceSearchRoots) { root in
                     LabeledContent {
@@ -81,7 +81,7 @@ struct SourceSettingsView: View {
                         .buttonStyle(.plain)
                     } label: {
                         Text(root.url.path)
-                            .font(.caption.monospaced())
+                            .font(SpellbookDesign.Typography.codeMetadata)
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
@@ -91,8 +91,8 @@ struct SourceSettingsView: View {
                 }
                 Toggle("Search entire user directory with Spotlight", isOn: $model.searchesEntireHome)
                 Text("Off by default. Spellbook never expands beyond the trusted roots above unless you explicitly enable this option.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
 
             Section("Personal publishing repository") {
@@ -102,8 +102,8 @@ struct SourceSettingsView: View {
                     .textFieldStyle(.roundedBorder)
                 HStack {
                     Text("Spellbook never creates a repository or force-pushes.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.metadata)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     Spacer()
                     if let target = model.publishingTargets.first(where: { $0.packageOverrideIDs.isEmpty }) {
                         Button("Remove", role: .destructive) {
@@ -115,8 +115,8 @@ struct SourceSettingsView: View {
                 }
                 if let publishingError {
                     Label(publishingError, systemImage: "exclamationmark.triangle")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.metadata)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
             }
         }

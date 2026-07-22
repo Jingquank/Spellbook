@@ -17,7 +17,7 @@ struct GeneralSettingsView: View {
                         Text(scannedAt, format: .dateTime)
                     } else {
                         Text("Not yet scanned")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     }
                 }
                 Button("Scan Now", systemImage: "arrow.clockwise", action: rescan)
@@ -32,7 +32,7 @@ struct GeneralSettingsView: View {
             if let catalogError = model.catalogError {
                 Section("Catalog") {
                     Label(catalogError, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     Button("Preserve and Rebuild Index", systemImage: "arrow.triangle.2.circlepath") {
                         Task { await model.rebuildCatalog() }
                     }
@@ -43,7 +43,7 @@ struct GeneralSettingsView: View {
                 Section("Preserved catalog") {
                     LabeledContent("Location") {
                         Text(preservedCatalogURL.path(percentEncoded: false))
-                            .font(.caption.monospaced())
+                            .font(SpellbookDesign.Typography.codeMetadata)
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }

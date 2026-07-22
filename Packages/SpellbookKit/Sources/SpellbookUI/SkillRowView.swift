@@ -7,14 +7,14 @@ struct SkillRowView: View {
     let skill: ProjectedSkill
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: SpellbookDesign.Space.medium) {
             SkillIconView(
                 thumbnail: skill.thumbnail,
-                size: SpellbookMetrics.thumbnailSize
+                size: SpellbookDesign.Sidebar.artworkSize
             )
 
             Text(skill.name)
-                .font(.callout)
+                .font(SpellbookDesign.Typography.rowLabel)
                 .lineLimit(1)
 
             Spacer(minLength: 4)

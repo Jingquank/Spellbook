@@ -12,15 +12,15 @@ struct NativeMarkdownReaderView: View {
     var body: some View {
         Group {
             if let document {
-                LazyVStack(alignment: .leading, spacing: 16) {
+                LazyVStack(alignment: .leading, spacing: SpellbookDesign.Space.xLarge) {
                     ForEach(document.blocks.indices, id: \.self) { index in
                         MarkdownBlockView(block: document.blocks[index])
                     }
                 }
             } else {
                 Text("Rendering…")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.metadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

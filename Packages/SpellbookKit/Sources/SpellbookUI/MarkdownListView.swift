@@ -6,7 +6,7 @@ struct MarkdownListView: View {
     let startIndex: Int?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: SpellbookDesign.Space.medium) {
             ForEach(items.indices, id: \.self) { index in
                 MarkdownListItemView(
                     item: items[index],
@@ -14,7 +14,7 @@ struct MarkdownListView: View {
                 )
             }
         }
-        .padding(.leading, 4)
+        .padding(.leading, SpellbookDesign.Space.xSmall)
     }
 
     private func marker(for offset: Int) -> String {

@@ -11,9 +11,9 @@ struct MarkdownTableRowView: View {
             ForEach(cells.indices, id: \.self) { index in
                 Text(MarkdownAttributedStringBuilder.build(cells[index].content))
                     .font(isHeader ? readerTextScale.tableFont.bold() : readerTextScale.tableFont)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .frame(minWidth: 120, alignment: .leading)
+                    .padding(.horizontal, SpellbookDesign.Space.large)
+                    .padding(.vertical, SpellbookDesign.Space.medium)
+                    .frame(minWidth: SpellbookDesign.Reader.tableColumnMinimumWidth, alignment: .leading)
                     .background(isHeader ? AnyShapeStyle(.quaternary) : AnyShapeStyle(.clear))
             }
         }

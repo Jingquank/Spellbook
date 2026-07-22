@@ -9,7 +9,7 @@ struct OperationHistorySectionView: View {
         Section("Recent changes") {
             if operations.isEmpty {
                 Text("No Spellbook-managed changes yet")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             } else {
                 ForEach(operations) { operation in
                     OperationHistoryRowView(operation: operation, onRestore: onRestore)

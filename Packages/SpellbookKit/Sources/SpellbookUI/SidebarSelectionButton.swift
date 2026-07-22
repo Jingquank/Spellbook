@@ -22,7 +22,7 @@ struct SidebarSelectionButton<Label: View>: View {
             label
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(.rect)
-                .padding(.horizontal, SpellbookMetrics.sidebarHorizontalInset)
+                .padding(.horizontal, SpellbookDesign.Sidebar.horizontalInset)
                 .frame(minHeight: interfaceDensity.libraryRowHeight)
         }
         .buttonStyle(.plain)

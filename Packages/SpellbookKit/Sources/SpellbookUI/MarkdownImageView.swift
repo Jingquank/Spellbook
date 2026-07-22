@@ -34,17 +34,17 @@ struct MarkdownImageView: View {
         image
             .resizable()
             .scaledToFit()
-            .frame(maxHeight: 520)
+            .frame(maxHeight: SpellbookDesign.Reader.imageMaximumHeight)
             .accessibilityLabel(accessibleName)
             .help(title ?? accessibleName)
     }
 
     private var placeholder: some View {
         Label("\(accessibleName) unavailable", systemImage: "photo.badge.exclamationmark")
-            .font(.callout)
-            .foregroundStyle(.secondary)
-            .padding(10)
-            .background(.quaternary, in: .rect(cornerRadius: 8))
+            .font(SpellbookDesign.Typography.body)
+            .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+            .padding(SpellbookDesign.Space.large)
+            .background(SpellbookDesign.Palette.grouped, in: .rect(cornerRadius: SpellbookDesign.Radius.medium))
             .accessibilityLabel("Image unavailable: \(accessibleName)")
     }
 

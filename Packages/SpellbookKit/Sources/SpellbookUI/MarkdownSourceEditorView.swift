@@ -28,8 +28,11 @@ struct MarkdownSourceEditorView: NSViewRepresentable {
         textView.isHorizontallyResizable = false
         textView.autoresizingMask = [.width]
         textView.textContainer?.widthTracksTextView = true
-        textView.textContainerInset = NSSize(width: 14, height: 14)
-        textView.font = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        textView.textContainerInset = NSSize(
+            width: SpellbookDesign.Space.large,
+            height: SpellbookDesign.Space.large
+        )
+        applyTypography(to: textView)
         textView.string = text
         textView.backgroundColor = .textBackgroundColor
         textView.setAccessibilityLabel("Skill Markdown source")
@@ -40,12 +43,22 @@ struct MarkdownSourceEditorView: NSViewRepresentable {
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView, textView.string != text else {
             if let textView = scrollView.documentView as? NSTextView {
-                textView.font = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
+                applyTypography(to: textView)
             }
             return
         }
         textView.string = text
-        textView.font = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        applyTypography(to: textView)
+    }
+
+    private func applyTypography(to textView: NSTextView) {
+        textView.font = SpellbookDesign.Typography.editorFont(size: fontSize)
+        textView.typingAttributes[.ligature] = 0
+        textView.textStorage?.addAttribute(
+            .ligature,
+            value: 0,
+            range: NSRange(location: 0, length: textView.string.utf16.count)
+        )
     }
 
     final class Coordinator: NSObject, NSTextViewDelegate {

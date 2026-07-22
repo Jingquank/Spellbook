@@ -5,14 +5,14 @@ final class SpellbookUITests: XCTestCase {
     func testAppLaunches() {
         let app = XCUIApplication()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Spellbook"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.searchFields["Search skills"].exists)
+        XCTAssertTrue(app.searchFields["Search skills"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.menuButtons["Library View"].exists)
     }
 
     func testAccessibilityAudit() throws {
         let app = XCUIApplication()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Spellbook"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.searchFields["Search skills"].waitForExistence(timeout: 8))
         let scanningIndicator = app.activityIndicators["Scanning skills"]
         if scanningIndicator.exists {
             XCTAssertTrue(
@@ -40,14 +40,39 @@ final class SpellbookUITests: XCTestCase {
         app.launchArguments += ["-AppleInterfaceStyle", "Dark"]
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["Spellbook"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.searchFields["Search skills"].exists)
+        XCTAssertTrue(app.searchFields["Search skills"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.menuButtons["Library View"].exists)
+    }
+
+    func testManageInspectorCanBeCollapsedAndRestored() {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.searchFields["Search skills"].waitForExistence(timeout: 8))
+
+        let toggle = app.buttons["Toggle Manage Inspector"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 3))
+        let inspector = app.scrollViews["Skill management inspector"]
+        let wasVisible = inspector.exists
+
+        toggle.click()
+        if wasVisible {
+            XCTAssertTrue(inspector.waitForNonExistence(timeout: 3))
+        } else {
+            XCTAssertTrue(inspector.waitForExistence(timeout: 3))
+        }
+
+        toggle.click()
+        if wasVisible {
+            XCTAssertTrue(inspector.waitForExistence(timeout: 3))
+        } else {
+            XCTAssertTrue(inspector.waitForNonExistence(timeout: 3))
+        }
     }
 
     func testSettingsSidebarMatchesLibraryLayout() {
         let app = XCUIApplication()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Spellbook"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.searchFields["Search skills"].waitForExistence(timeout: 8))
 
         app.typeKey(",", modifierFlags: .command)
 
@@ -66,7 +91,7 @@ final class SpellbookUITests: XCTestCase {
     func testSettingsWindowChromeMatchesMainWindow() {
         let app = XCUIApplication()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Spellbook"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.searchFields["Search skills"].waitForExistence(timeout: 8))
 
         let mainWindow = app.windows.firstMatch
         let mainCloseButton = mainWindow.buttons[XCUIIdentifierCloseWindow]
@@ -91,7 +116,7 @@ final class SpellbookUITests: XCTestCase {
     func testLargeSidebarJumpRemainsResponsive() {
         let app = XCUIApplication()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Spellbook"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.searchFields["Search skills"].waitForExistence(timeout: 8))
         let scanningIndicator = app.activityIndicators["Scanning skills"]
         if scanningIndicator.exists {
             XCTAssertTrue(

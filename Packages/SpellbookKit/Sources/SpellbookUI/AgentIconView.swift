@@ -6,10 +6,10 @@ struct AgentIconView: View {
 
     var body: some View {
         Image(systemName: symbolName)
-            .font(.system(size: 9, weight: .semibold))
+            .font(SpellbookDesign.Typography.micro.weight(.semibold))
             .foregroundStyle(foregroundStyle)
-            .frame(width: SpellbookMetrics.thumbnailSize, height: SpellbookMetrics.thumbnailSize)
-            .background(backgroundStyle, in: .rect(cornerRadius: 4))
+            .frame(width: SpellbookDesign.Sidebar.artworkSize, height: SpellbookDesign.Sidebar.artworkSize)
+            .background(backgroundStyle, in: .rect(cornerRadius: SpellbookDesign.Radius.xSmall))
             .accessibilityLabel(agent.displayName)
     }
 
@@ -33,7 +33,7 @@ struct AgentIconView: View {
         switch agent {
         case .claude: .orange
         case .cursor: .black
-        case .codex: Color.secondary.opacity(0.14)
+        case .codex: SpellbookDesign.Palette.grouped
         }
     }
 }

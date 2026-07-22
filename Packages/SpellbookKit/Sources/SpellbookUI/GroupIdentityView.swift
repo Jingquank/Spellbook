@@ -8,7 +8,7 @@ struct GroupIdentityView: View {
         switch group.kind {
         case .package:
             if let thumbnail = group.thumbnail {
-                SkillIconView(thumbnail: thumbnail, size: SpellbookMetrics.thumbnailSize)
+                SkillIconView(thumbnail: thumbnail, size: SpellbookDesign.Sidebar.artworkSize)
             }
         case .agent:
             AgentIconView(agent: agent)

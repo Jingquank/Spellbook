@@ -13,6 +13,8 @@ jobs:
         run: brew install xcodegen
       - name: Generate project
         run: xcodegen generate
+      - name: Enforce design tokens
+        run: ruby scripts/check-design-tokens.rb
       - name: Test package with strict warnings
         run: swift test --package-path Packages/SpellbookKit -Xswiftc -warnings-as-errors
       - name: Build and run macOS UI tests

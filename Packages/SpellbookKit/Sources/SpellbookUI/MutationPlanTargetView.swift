@@ -7,24 +7,24 @@ struct MutationPlanTargetView: View {
     var body: some View {
         DisclosureGroup {
             MutationDiffComparisonView(target: target)
-                .padding(.top, 8)
+                .padding(.top, SpellbookDesign.Space.medium)
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: SpellbookDesign.Space.large) {
                 Image(systemName: target.action == .remove ? "trash" : "doc.text")
-                    .foregroundStyle(.secondary)
-                    .frame(width: 16)
-                VStack(alignment: .leading, spacing: 2) {
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+                    .frame(width: SpellbookDesign.Size.icon)
+                VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                     Text(target.destinationURL.lastPathComponent)
                     Text(target.destinationURL.deletingLastPathComponent().path(percentEncoded: false))
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
+                        .font(SpellbookDesign.Typography.codeMetadata)
+                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
                 Spacer()
                 Text("+\(target.diff.addedLineCount) −\(target.diff.removedLineCount)")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .font(SpellbookDesign.Typography.codeMetadata)
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }
         }
     }
