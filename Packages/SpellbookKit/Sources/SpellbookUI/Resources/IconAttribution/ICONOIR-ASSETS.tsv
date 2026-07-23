@@ -1,0 +1,47 @@
+asset	upstream_path	revision	transformation
+icon-search	icons/regular/search.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-nav-arrow-right	icons/regular/nav-arrow-right.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-check	icons/regular/check.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-check-circle	icons/regular/check-circle.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-badge-check	icons/regular/badge-check.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-square	icons/regular/square.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-refresh	icons/regular/refresh.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-refresh-double	icons/regular/refresh-double.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-download-circle	icons/regular/download-circle.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-submit-document	icons/regular/submit-document.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-upload	icons/regular/upload.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-undo	icons/regular/undo.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-book	icons/regular/book.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-book-stack	icons/regular/book-stack.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-page	icons/regular/page.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-copy	icons/regular/copy.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-archive	icons/regular/archive.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-folder	icons/regular/folder.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-folder-plus	icons/regular/folder-plus.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-package	icons/regular/package.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-more-horiz	icons/regular/more-horiz.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-settings	icons/regular/settings.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-palette	icons/regular/palette.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-cpu	icons/regular/cpu.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-filter-list	icons/regular/filter-list.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-view-columns-3	icons/regular/view-columns-3.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-sidebar-expand	icons/regular/sidebar-expand.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-sidebar-collapse	icons/regular/sidebar-collapse.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-link	icons/regular/link.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-link-slash	icons/regular/link-slash.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-server-connection	icons/regular/server-connection.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-network	icons/regular/network.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-combine	icons/regular/combine.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-horizontal-split	icons/regular/horizontal-split.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-warning-circle	icons/regular/warning-circle.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-warning-triangle	icons/regular/warning-triangle.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-help-circle	icons/regular/help-circle.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-edit-pencil	icons/regular/edit-pencil.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-media-image	icons/regular/media-image.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-media-image-xmark	icons/regular/media-image-xmark.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-quote	icons/regular/quote.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-minus-circle	icons/regular/minus-circle.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-trash	icons/regular/trash.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-tools	icons/regular/tools.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	stroke-width 1.5 -> 2.0
+icon-xmark-circle-solid	icons/solid/xmark-circle.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	none
+icon-check-square-solid	icons/solid/check-square.svg	10a66d02c6e3c94437bbf268352b1652e9eae7e5	none

@@ -4,7 +4,7 @@ Status: Accepted — 2026-07-22
 
 ## Decision
 
-Bundle and process-register Schibsted Grotesk for app-owned interface and prose, and Commit Mono for code-like content. Disable programming ligatures. Use a custom neutral light/dark/Increase Contrast palette. Reserve blue for links, focus, and updates; use neutral actions and selection.
+Bundle and process-register Schibsted Grotesk for app-owned interface and prose, and Commit Mono for code-like content. Disable programming ligatures. Use a custom neutral light/dark/Increase Contrast palette. Use warm graphite for links, focus, updates, actions, and selection; blue is not an interaction role.
 
 ## Rationale
 

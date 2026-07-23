@@ -6,6 +6,8 @@ struct SkillDetailHeaderView: View {
 
     let skill: SkillRecord
     let thumbnail: SkillThumbnail
+    let showsReviewUpdate: Bool
+    let onReviewUpdate: () -> Void
     let onShowManagement: () -> Void
 
     @State private var showsFullSummary = false
@@ -19,8 +21,7 @@ struct SkillDetailHeaderView: View {
                 )
 
                 VStack(alignment: .leading, spacing: SpellbookDesign.Space.small) {
-                    Text(skill.name)
-                        .font(SpellbookDesign.Typography.detailTitle)
+                    titleAndUpdate
 
                     if !skill.summary.isEmpty {
                         Text(skill.summary)
@@ -42,7 +43,14 @@ struct SkillDetailHeaderView: View {
                         }
                     }
 
-                    Label(compactSummary, systemImage: managementState.symbol)
+                    HStack(spacing: SpellbookDesign.Space.small) {
+                        SpellbookIconView(
+                            icon: managementState.icon,
+                            size: .small,
+                            colorRole: managementState.iconColorRole
+                        )
+                        Text(compactSummary)
+                    }
                         .font(SpellbookDesign.Typography.metadata)
                         .foregroundStyle(managementState.tint)
                 }
@@ -51,7 +59,14 @@ struct SkillDetailHeaderView: View {
             }
 
             HStack(spacing: SpellbookDesign.Space.large) {
-                Label(managementState.guidance, systemImage: managementState.symbol)
+                HStack(spacing: SpellbookDesign.Space.medium) {
+                    SpellbookIconView(
+                        icon: managementState.icon,
+                        size: .small,
+                        colorRole: managementState.iconColorRole
+                    )
+                    Text(managementState.guidance)
+                }
                     .font(SpellbookDesign.Typography.metadata)
                     .foregroundStyle(managementState.tint)
                 Spacer(minLength: SpellbookDesign.Space.medium)
@@ -62,6 +77,45 @@ struct SkillDetailHeaderView: View {
                 SpellbookDesign.Palette.grouped,
                 in: .rect(cornerRadius: SpellbookDesign.Radius.medium)
             )
+        }
+    }
+
+    private var titleAndUpdate: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: SpellbookDesign.Space.medium) {
+                title
+                    .fixedSize(horizontal: true, vertical: false)
+                reviewUpdateButton
+            }
+
+            VStack(alignment: .leading, spacing: SpellbookDesign.Space.medium) {
+                title
+                reviewUpdateButton
+            }
+        }
+    }
+
+    private var title: some View {
+        Text(skill.name)
+            .font(SpellbookDesign.Typography.detailTitle)
+            .lineLimit(1)
+    }
+
+    @ViewBuilder
+    private var reviewUpdateButton: some View {
+        if showsReviewUpdate {
+            Button(action: onReviewUpdate) {
+                SpellbookIconLabel(
+                    title: "Review Update",
+                    icon: .downloadCircle,
+                    size: .small,
+                    colorRole: .interactive
+                )
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .tint(SpellbookDesign.Palette.interaction)
+            .accessibilityIdentifier("Review Update")
         }
     }
 

@@ -10,12 +10,12 @@ enum SettingsSectionID: String, CaseIterable, Identifiable {
 
     var label: String { rawValue.capitalized }
 
-    var symbolName: String {
+    var icon: SpellbookIcon {
         switch self {
-        case .general: "gearshape"
-        case .appearance: "paintpalette"
-        case .agents: "cpu"
-        case .sources: "point.3.connected.trianglepath.dotted"
+        case .general: .settings
+        case .appearance: .palette
+        case .agents: .cpu
+        case .sources: .network
         }
     }
 }

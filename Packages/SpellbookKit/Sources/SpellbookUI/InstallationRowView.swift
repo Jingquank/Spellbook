@@ -31,8 +31,7 @@ struct InstallationRowView: View {
 
             VStack(alignment: .trailing, spacing: SpellbookDesign.Space.micro) {
                 if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(SpellbookDesign.Typography.metadata)
+                    SpellbookIconView(icon: .check, size: .small, colorRole: .success)
                         .accessibilityHidden(true)
                 }
                 Text(installation.localState.label)

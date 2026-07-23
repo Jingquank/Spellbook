@@ -8,6 +8,10 @@ struct SpellbookApp: App {
 
     init() {
         SpellbookUIBootstrap.prepareDesignSystem()
+        if ProcessInfo.processInfo.arguments.contains("--ui-test-fixture") {
+            _model = State(initialValue: UITestFixtures.makeModel())
+            return
+        }
         let initialStore: GRDBCatalogStore?
         let initialCatalogError: String?
         do {
@@ -47,7 +51,7 @@ struct SpellbookApp: App {
                 .frame(minWidth: 900, minHeight: 620)
         }
         .defaultSize(width: 1180, height: 780)
-        .windowToolbarStyle(.unified(showsTitle: true))
+        .windowToolbarStyle(.unified(showsTitle: false))
 
         Settings {
             SpellbookSettingsView()

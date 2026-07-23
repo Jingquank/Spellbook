@@ -10,6 +10,7 @@
 		0E1905DA109C5B1D8BAE428D /* SpellbookUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56ECFE9AB21E46C92D44C6C0 /* SpellbookUITests.swift */; };
 		367BD16667E5EC52444760FC /* SpellbookInfrastructure in Frameworks */ = {isa = PBXBuildFile; productRef = 7F781C2D58D4C988231D2357 /* SpellbookInfrastructure */; };
 		36E7D8ED0E710A11B73BB23D /* SpellbookCore in Frameworks */ = {isa = PBXBuildFile; productRef = A80700AB6107439FD1E9FC49 /* SpellbookCore */; };
+		5002A256C5FC233D488DD59A /* UITestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9604AEE4F06068EA3C57334C /* UITestFixtures.swift */; };
 		5FB9F42D103BD83F91934C39 /* SpellbookApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3B095F60D4A249B7938EA6 /* SpellbookApp.swift */; };
 		60D80BE10C6D22FA28042432 /* SpellbookUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0E518942315B7035C1407BD2 /* SpellbookUI */; };
 		D2DEFEB9F610A8EAF5E0E5B3 /* SpellbookMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = 55B22ED3AE26FF59DD11B70D /* SpellbookMarkdown */; };
@@ -29,6 +30,7 @@
 		1E21168E581B2C4D83680E43 /* SpellbookUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpellbookUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56ECFE9AB21E46C92D44C6C0 /* SpellbookUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellbookUITests.swift; sourceTree = "<group>"; };
 		6EE6F027DD09848C89D79069 /* Spellbook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spellbook.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9604AEE4F06068EA3C57334C /* UITestFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestFixtures.swift; sourceTree = "<group>"; };
 		E504A26C7F559DD3CA985DA9 /* SpellbookKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SpellbookKit; path = Packages/SpellbookKit; sourceTree = SOURCE_ROOT; };
 		EB3B095F60D4A249B7938EA6 /* SpellbookApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellbookApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -95,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				EB3B095F60D4A249B7938EA6 /* SpellbookApp.swift */,
+				9604AEE4F06068EA3C57334C /* UITestFixtures.swift */,
 			);
 			path = SpellbookApp;
 			sourceTree = "<group>";
@@ -188,6 +191,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5FB9F42D103BD83F91934C39 /* SpellbookApp.swift in Sources */,
+				5002A256C5FC233D488DD59A /* UITestFixtures.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

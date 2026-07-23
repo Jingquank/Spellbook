@@ -1,50 +1,57 @@
-import AppKit
 import SwiftUI
 
-struct LibrarySearchField: NSViewRepresentable {
+struct LibrarySearchField: View {
     @Binding var text: String
+    @FocusState private var isFocused: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isHovering = false
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text)
-    }
+    var body: some View {
+        HStack(spacing: SpellbookDesign.Space.xSmall) {
+            SpellbookIconView(icon: .search, size: .compact, colorRole: .secondary)
+                .frame(width: 14, height: 14)
 
-    func makeNSView(context: Context) -> NSSearchField {
-        let searchField = NSSearchField()
-        searchField.placeholderString = "Search skills"
-        searchField.font = SpellbookDesign.Typography.controlNSFont
-        searchField.sendsSearchStringImmediately = true
-        searchField.delegate = context.coordinator
-        searchField.setAccessibilityIdentifier("Search skills")
-        return searchField
-    }
+            TextField("Search skills", text: $text)
+                .textFieldStyle(.plain)
+                .font(SpellbookDesign.Typography.control)
+                .focused($isFocused)
+                .onExitCommand {
+                    guard !text.isEmpty else { return }
+                    text = ""
+                }
+                .accessibilityIdentifier("Search skills")
 
-    func updateNSView(_ searchField: NSSearchField, context: Context) {
-        if searchField.stringValue != text {
-            searchField.stringValue = text
+            SpellbookIconButton(
+                icon: .clear,
+                label: "Clear Search",
+                size: .small,
+                frame: .compact,
+                colorRole: .secondary
+            ) {
+                text = ""
+                isFocused = true
+            }
+            .opacity(text.isEmpty ? 0 : 1)
+            .disabled(text.isEmpty)
+            .accessibilityIdentifier("Clear Search")
         }
-    }
-
-    func sizeThatFits(
-        _ proposal: ProposedViewSize,
-        nsView: NSSearchField,
-        context: Context
-    ) -> CGSize? {
-        CGSize(
-            width: proposal.width ?? nsView.intrinsicContentSize.width,
-            height: proposal.height ?? nsView.intrinsicContentSize.height
+        .padding(.horizontal, SpellbookDesign.Space.small)
+        .frame(height: SpellbookDesign.Sidebar.searchFieldHeight)
+        .background(
+            RoundedRectangle(cornerRadius: SpellbookDesign.Radius.small)
+                .fill(fieldFill)
         )
+        .spellbookFocusSurface(role: .field, isFocused: isFocused)
+        .onHover { isHovering = $0 }
+        .animation(SpellbookMotion.sidebarHover(reduceMotion: reduceMotion), value: isHovering)
+        .accessibilityElement(children: .contain)
     }
 
-    final class Coordinator: NSObject, NSSearchFieldDelegate {
-        @Binding private var text: String
-
-        init(text: Binding<String>) {
-            _text = text
-        }
-
-        func controlTextDidChange(_ notification: Notification) {
-            guard let searchField = notification.object as? NSSearchField else { return }
-            text = searchField.stringValue
+    private var fieldFill: Color {
+        if isHovering {
+            SpellbookDesign.Palette.hover
+        } else {
+            SpellbookDesign.Palette.grouped
         }
     }
 }

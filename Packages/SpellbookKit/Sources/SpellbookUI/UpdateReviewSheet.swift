@@ -94,7 +94,11 @@ struct UpdateReviewSheet: View {
             }
 
             if let blockingReason = update.blockingReason {
-                Label(blockingReason, systemImage: "exclamationmark.triangle")
+                SpellbookIconLabel(
+                    title: blockingReason,
+                    icon: .warningTriangle,
+                    colorRole: .warning
+                )
                     .font(SpellbookDesign.Typography.metadata)
                     .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             } else {

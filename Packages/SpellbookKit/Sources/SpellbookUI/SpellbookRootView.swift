@@ -3,6 +3,8 @@ import SwiftUI
 
 public struct SpellbookRootView: View {
     @Environment(SpellbookModel.self) private var model
+    @State private var interactionModality = InteractionModalityModel()
+    @State private var splitViewVisibility: NavigationSplitViewVisibility = .all
 
     public init() {
         SpellbookDesign.registerFonts()
@@ -11,7 +13,7 @@ public struct SpellbookRootView: View {
     public var body: some View {
         @Bindable var model = model
 
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $splitViewVisibility) {
             LibrarySidebarView()
                 .navigationSplitViewColumnWidth(
                     min: SpellbookDesign.Sidebar.minimumWidth,
@@ -22,13 +24,17 @@ public struct SpellbookRootView: View {
             SkillDetailContainerView()
         }
         .navigationSplitViewStyle(.balanced)
+        .toolbarBackground(.hidden, for: .windowToolbar)
         .font(SpellbookDesign.Typography.body)
         .foregroundStyle(SpellbookDesign.Palette.textPrimary)
         .background(SpellbookDesign.Palette.canvas)
         .interfaceAppearance(textScale: model.textScale, density: model.density)
+        .environment(\.interactionModality, interactionModality.current)
         .tint(SpellbookDesign.Palette.focus)
         .preferredColorScheme(preferredColorScheme)
         .task(model.start)
+        .onAppear(perform: interactionModality.start)
+        .onDisappear(perform: interactionModality.stop)
         .sheet(isPresented: $model.showsUpdateReview) {
             UpdateReviewSheet()
         }

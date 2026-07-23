@@ -2,35 +2,34 @@ import SpellbookCore
 import SwiftUI
 
 struct StatusIndicatorView: View {
-    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     let status: ActionableStatus
     let action: () -> Void
 
     var body: some View {
-        Button(status.label, systemImage: symbolName, action: action)
-            .labelStyle(.iconOnly)
-            .buttonStyle(.plain)
-            .font(SpellbookDesign.Typography.metadata)
-            .foregroundStyle(tint)
-            .symbolVariant(differentiateWithoutColor ? .fill : .none)
-            .help(status.label)
+        SpellbookIconButton(
+            icon: icon,
+            label: status.label,
+            size: .small,
+            frame: .compact,
+            colorRole: colorRole,
+            action: action
+        )
     }
 
-    private var symbolName: String {
+    private var icon: SpellbookIcon {
         switch status {
-        case .conflict: "exclamationmark.triangle"
-        case .actionRequired: "exclamationmark.circle"
-        case .modified: "pencil.circle"
-        case .updateAvailable: "arrow.down.circle"
+        case .conflict: .warningTriangle
+        case .actionRequired: .warningCircle
+        case .modified: .edit
+        case .updateAvailable: .downloadCircle
         }
     }
 
-    private var tint: Color {
+    private var colorRole: SpellbookIconColorRole {
         switch status {
-        case .conflict: SpellbookDesign.Palette.error
-        case .actionRequired: SpellbookDesign.Palette.warning
-        case .modified: SpellbookDesign.Palette.warning
-        case .updateAvailable: SpellbookDesign.Palette.update
+        case .conflict: .error
+        case .actionRequired, .modified: .warning
+        case .updateAvailable: .update
         }
     }
 }

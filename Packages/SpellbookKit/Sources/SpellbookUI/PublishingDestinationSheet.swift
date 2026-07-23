@@ -25,7 +25,11 @@ struct PublishingDestinationSheet: View {
             .formStyle(.grouped)
 
             if let errorMessage {
-                Label(errorMessage, systemImage: "exclamationmark.triangle")
+                SpellbookIconLabel(
+                    title: errorMessage,
+                    icon: .warningTriangle,
+                    colorRole: .warning
+                )
                     .font(SpellbookDesign.Typography.metadata)
                     .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }

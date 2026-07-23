@@ -1,0 +1,57 @@
+# Spellbook icon asset manifest
+# Iconoir revision: 10a66d02c6e3c94437bbf268352b1652e9eae7e5
+# Regular transformation: stroke-width 1.5 -> 2.0; geometry, caps, and joins unchanged.
+# Cursor brand page: https://cursor.com/brand
+# Cursor: https://ptht05hbb1ssoooe.public.blob.vercel-storage.com/assets/brand/cursor-brand-assets.zip
+# Claude Code: https://anthropic.gallerycdn.vsassets.io/extensions/anthropic/claude-code/2.1.218/1784755560788/Microsoft.VisualStudio.Services.Icons.Default
+# Codex: https://openai.gallerycdn.vsassets.io/extensions/openai/chatgpt/26.5715.61943/1784654712417/Microsoft.VisualStudio.Services.Icons.Default
+7241633e5a39b44a947c7b9a821637f30d6e86716e7a8c847136d91f9c3f6ba1  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/agent-claude-code.imageset/agent-claude-code.png
+2ce1c57dd3b312417106a487815ab1235bddce17e1fa9b32a2f048bd71ee25d3  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/agent-codex.imageset/agent-codex.png
+ff6890b460641ae05d8e58691c3b4e4438ef7da473df6c34ab3f50334be8c9b3  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/agent-cursor.imageset/agent-cursor-dark.png
+1ea13e52299f52568335d08fb39b248660992bf66a0c0fe452ee382b008452d8  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/agent-cursor.imageset/agent-cursor-light.png
+3628debdb5b84afe7b3ec16ca343a3bbcfd8d635afdeff269b2ae76206ae658f  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-archive.imageset/icon-archive.svg
+eb03b52e678c081897cdb13532be9d4547905a4b5ba155b9acabbea9ad9aa152  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-badge-check.imageset/icon-badge-check.svg
+07d39d0600af005e761be5e9da38db6303609787bcc2a5ba35b1cb8146fcff14  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-book-stack.imageset/icon-book-stack.svg
+48c3c885d19fe7c62d22b248f39508d9342293d699024b4ffdb4a04524497ef6  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-book.imageset/icon-book.svg
+3449cf2c6fc7b33edb50eeacb549e1590c8fb64ff58ecda9ee7b5da92d00d8bf  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-check-circle.imageset/icon-check-circle.svg
+9f00d96176771125f0329c479acd9420760fcdcd539844f26fa2b3c471661812  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-check-square-solid.imageset/icon-check-square-solid.svg
+8c1a33d00e88f201693ff0e7cfd39d5d12b78f06a0090b19cb896fe25d83bbfa  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-check.imageset/icon-check.svg
+804dd431fb0edd04810daa30af6d3b86fbd08622fb60b96886a1eaa1921d76bd  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-combine.imageset/icon-combine.svg
+29e64b980b99ba719cfd0ea2bf1d5f4b103d42f5cb0bc03acf756c0c268b08aa  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-copy.imageset/icon-copy.svg
+f82dba4bfd737c47f0d7b921d86fdb0e9c843375014c65b6a7cb4b85947f68fb  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-cpu.imageset/icon-cpu.svg
+0d6a05edb9b298415a948c701f5f7bde77c0b4717cc05cf57b3bc5efb4e450df  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-download-circle.imageset/icon-download-circle.svg
+c2833522908dfba6d24c82afbf4f1814712390c8c539751d4049cba7d751b9e8  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-edit-pencil.imageset/icon-edit-pencil.svg
+3a3bb688c93ab001f28d68681372cf9e3f145005734c47f0c500e351be108ee2  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-filter-list.imageset/icon-filter-list.svg
+02c194bdf3f4aa82bb059880152662ba22f13429329022b4a87875cfb99a2b09  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-folder-plus.imageset/icon-folder-plus.svg
+9fd048b2009895999fc1a43d6f39a8253436e8a861765ea8ab96ccb8566062e0  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-folder.imageset/icon-folder.svg
+6673e06cc8c15285b6c231720e287463a36ebe484b79c03f88cd49f4136b5886  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-help-circle.imageset/icon-help-circle.svg
+89c9a6dc8fb1e9e7b7e7d0c698d470f92e8fa061add6141a221ddc83f4cb99ce  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-horizontal-split.imageset/icon-horizontal-split.svg
+fcdf9ebdd4801dbb0bbe836cafa45cd3256f02d1dad0d37c52280f0780314c30  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-link-slash.imageset/icon-link-slash.svg
+751e6425da3dfb34d2ea399ae44a399769bd9906e3f179738162dc7b415f3b90  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-link.imageset/icon-link.svg
+f54ba6ca46d33afd2e9288aaf69ff9ed042b8e8d470dd460a2d2a848d42b55cb  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-media-image-xmark.imageset/icon-media-image-xmark.svg
+1e5e017fa92a3f48a037577889754f5327bad0653b2751ce38b33e65b3f6e143  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-media-image.imageset/icon-media-image.svg
+0011de18014cae2647076cdb83f9c8fb52ed52446b5048a61088282e264ad39d  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-minus-circle.imageset/icon-minus-circle.svg
+917b150be25cffac8d49e61209f6c69f4ab9bc6f3f27cf0b1908e34af4d2a345  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-more-horiz.imageset/icon-more-horiz.svg
+db4d62269dc1ea8f89c5bc5911c36b02622d13531d4993b37c8b53d9c534a5ea  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-nav-arrow-right.imageset/icon-nav-arrow-right.svg
+ed9f930a70d58adcd3626dc9b5570e894302c9b34f87b0c7b3ff0c87e5f35296  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-network.imageset/icon-network.svg
+3352fb4ca47dd6c97be3b6a810e24945a912632a9323c7e8a39679aae0e2710b  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-package.imageset/icon-package.svg
+070937260c63eb5f04b4aaea6a535cd0b1756d6295f6044ae0873f5009add1bc  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-page.imageset/icon-page.svg
+67d3bb5ee00e8d612967df50e3f175e072aee304b8f5eeb49f8cb4ac97f4cc46  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-palette.imageset/icon-palette.svg
+b7eda4667cb7d5efa5f78447a2209cc5e4310f95aec9ce9c3aac942934f4ddae  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-quote.imageset/icon-quote.svg
+a2517088468762028e732976631b4a2b9ab5180fb265ecb3dd8129eb6b7f543c  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-refresh-double.imageset/icon-refresh-double.svg
+418469ae295a4701e382ca13dcc75646b427b287e54bef2c5dafcd968f817a1f  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-refresh.imageset/icon-refresh.svg
+04a928232728dc0ac63d4e9cd11fc95c50a85560275c0620211ed13e9a4f7581  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-search.imageset/icon-search.svg
+a90da6ba6bb7886aca5f32b9dca9ed77cc7fe4db42c7c42c8984930299968e3c  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-server-connection.imageset/icon-server-connection.svg
+cd566cb48fde2288d8913d2feace8a5021c57e06a5b4b5c7685ae16b4f4ff100  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-settings.imageset/icon-settings.svg
+aec148016fac639fda9d3e7c86f5ca13a30b23451255396b1b2e5721a6f8a4ff  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-sidebar-collapse.imageset/icon-sidebar-collapse.svg
+a4a941c57b2842dbdddbb52777371a626c8f9782efd2d8e2824ef279a2d268b9  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-sidebar-expand.imageset/icon-sidebar-expand.svg
+01d5ad898980a20ebc76e86c3ed6ccb6434f094572282d6ca349e9f642537fac  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-square.imageset/icon-square.svg
+12e1482d90c0d6f46a3060609370126e420292fd56100d84d224c1018e9af2ba  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-submit-document.imageset/icon-submit-document.svg
+9dcc175ba90c5af609108afe59dd089d1578ab6aafef8a6ae129008acc98de91  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-tools.imageset/icon-tools.svg
+7e1670223a436f93e4b41a23fdfdf1e3ca528e8600086541fa867e67226912d3  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-trash.imageset/icon-trash.svg
+e15ace35a32b990d137a9b8c9db67f3a11484af8595f5a473c168ebb33497ee2  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-undo.imageset/icon-undo.svg
+353d204ee841f254d50956207d1d346a4a87ab047228cb63ca0c29433b741099  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-upload.imageset/icon-upload.svg
+5581dbeab93fdda0c2b42eb0029bb52a2baf5d468a975a5c3a1717cf8f6b5ac1  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-view-columns-3.imageset/icon-view-columns-3.svg
+9a4a390ab079590bf287a757605a07c00df47b4f6c79d4f80f1b40c8a51d6768  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-warning-circle.imageset/icon-warning-circle.svg
+7bbb9767257eff0977439785b9baf6d7b15784d5d0fb65c9f454ff3eae30b463  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-warning-triangle.imageset/icon-warning-triangle.svg
+57e081f24d1cad5a7ca97dbaa2ce476e1ea756dde20d6b42a02d1e0d3c245c1b  Packages/SpellbookKit/Sources/SpellbookUI/Resources/Icons.xcassets/icon-xmark-circle-solid.imageset/icon-xmark-circle-solid.svg

@@ -8,8 +8,11 @@ struct MarkdownListItemView: View {
     var body: some View {
         HStack(alignment: .top, spacing: SpellbookDesign.Space.medium) {
             if let taskState = item.taskState {
-                Image(systemName: taskState == .checked ? "checkmark.square.fill" : "square")
-                    .foregroundStyle(taskState == .checked ? .secondary : .tertiary)
+                SpellbookIconView(
+                    icon: taskState == .checked ? .checked : .unchecked,
+                    size: .standard,
+                    colorRole: taskState == .checked ? .secondary : .disabled
+                )
                     .accessibilityLabel(taskState == .checked ? "Completed" : "Not completed")
             } else {
                 Text(marker)

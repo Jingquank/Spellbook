@@ -10,10 +10,9 @@ struct SkillDetailContainerView: View {
         } else {
             ContentUnavailableView(
                 "Choose a skill",
-                systemImage: "book.closed",
+                systemImage: NativeSystemSymbol.book.name,
                 description: Text("Select a skill to read its instructions and inspect its installations.")
             )
         }
     }
 }
-

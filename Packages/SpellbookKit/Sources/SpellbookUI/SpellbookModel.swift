@@ -69,7 +69,6 @@ public final class SpellbookModel {
     public private(set) var installationSourceStates = [InstallationSourceState]()
     public private(set) var installerPackageReceipts = [InstallerPackageReceipt]()
     public private(set) var packageNameEvidence = [PackageNameEvidence]()
-    public private(set) var packageTitleOverrides = [PackageTitleOverride]()
     public private(set) var sourceSearchRoots = [SourceSearchRootRecord]()
     public private(set) var identityClusterDecisions = [IdentityClusterDecision]() {
         didSet { if oldValue != identityClusterDecisions { invalidateProjection() } }
@@ -843,49 +842,6 @@ public final class SpellbookModel {
         await refreshOperations()
     }
 
-    public func read(_ installation: SkillInstallation) async throws -> ManagedFileContent {
-        try await manager.read(at: installation.entryURL)
-    }
-
-    public func planSave(
-        _ text: String,
-        installation: SkillInstallation,
-        expectedHash: String
-    ) async throws -> ManagedMutationPlan {
-        try await manager.plan(
-            [MutationRequest(
-                destinationURL: installation.entryURL,
-                action: .write,
-                expectedHash: expectedHash,
-                proposedText: text
-            )],
-            kind: .edit
-        )
-    }
-
-    public func planApply(
-        _ text: String,
-        skill: SkillRecord,
-        to agents: Set<AgentKind>
-    ) async throws -> ManagedMutationPlan {
-        var requests = [MutationRequest]()
-        for agent in agents.sorted(by: { $0.rawValue < $1.rawValue }) {
-            let existing = skill.installations.first { $0.agent == agent }
-            let destinationURL = if let existing {
-                existing.entryURL
-            } else {
-                await manager.suggestedEntryURL(for: agent, skillName: skill.name)
-            }
-            requests.append(MutationRequest(
-                destinationURL: destinationURL,
-                action: .write,
-                expectedHash: existing?.contentHash,
-                proposedText: text
-            ))
-        }
-        return try await manager.plan(requests, kind: .apply)
-    }
-
     public func planRemoval(
         _ installation: SkillInstallation
     ) async throws -> ManagedMutationPlan {
@@ -950,43 +906,6 @@ public final class SpellbookModel {
     }
 
     @discardableResult
-    public func save(
-        _ text: String,
-        installation: SkillInstallation,
-        expectedHash: String
-    ) async throws -> FileMutationReceipt {
-        let receipt = try await manager.write(
-            text,
-            to: installation.entryURL,
-            expectedHash: expectedHash,
-            kind: .edit
-        )
-        await rescan()
-        await refreshOperations()
-        return receipt
-    }
-
-    @discardableResult
-    public func apply(
-        _ text: String,
-        skill: SkillRecord,
-        to agent: AgentKind
-    ) async throws -> FileMutationReceipt {
-        let plan = try await planApply(text, skill: skill, to: [agent])
-        let receipt = try await execute(plan)
-        guard let outcome = receipt.outcomes.first else { throw SkillMutationError.invalidPlan }
-        return FileMutationReceipt(
-            destinationURL: outcome.destinationURL,
-            resultingHash: outcome.resultingHash,
-            recoveryURL: outcome.recoveryURL
-        )
-    }
-
-    public func suggestedEntryURL(for agent: AgentKind, skillName: String) async -> URL {
-        await manager.suggestedEntryURL(for: agent, skillName: skillName)
-    }
-
-    @discardableResult
     public func remove(_ installation: SkillInstallation) async throws -> FileMutationReceipt {
         let receipt = try await manager.remove(
             at: installation.entryURL,
@@ -1012,26 +931,6 @@ public final class SpellbookModel {
         defaults.set(skillSortMode.rawValue, forKey: PreferenceKey.skillSortMode)
         defaults.set(agentSortMode.rawValue, forKey: PreferenceKey.agentSortMode)
         defaults.set(groupsFirst, forKey: PreferenceKey.groupsFirst)
-    }
-
-    public func setPackageTitleStrategy(
-        _ strategy: PackageTitleStrategy,
-        customTitle: String? = nil,
-        for packageID: PackageID
-    ) async {
-        let override = PackageTitleOverride(
-            packageID: packageID,
-            strategy: strategy,
-            customTitle: customTitle
-        )
-        packageTitleOverrides.removeAll { $0.packageID == packageID }
-        packageTitleOverrides.append(override)
-        do {
-            try await catalog?.savePackageTitleOverrides(packageTitleOverrides)
-            snapshot = enriched(snapshot)
-        } catch {
-            catalogError = error.localizedDescription
-        }
     }
 
     public func artworkUpload(for packageID: PackageID) -> PackageArtworkUpload? {
@@ -1322,7 +1221,6 @@ public final class SpellbookModel {
             async let loadedInstallationStates = catalog.loadInstallationSourceStates()
             async let loadedReceipts = catalog.loadInstallerPackageReceipts()
             async let loadedNameEvidence = catalog.loadPackageNameEvidence()
-            async let loadedTitleOverrides = catalog.loadPackageTitleOverrides()
             async let loadedSearchRoots = catalog.loadSourceSearchRoots()
             async let loadedClusterDecisions = catalog.loadIdentityClusterDecisions()
             async let loadedArtworkEvidence = catalog.loadPackageArtworkEvidence()
@@ -1336,7 +1234,6 @@ public final class SpellbookModel {
             installationSourceStates = try await loadedInstallationStates
             installerPackageReceipts = try await loadedReceipts
             packageNameEvidence = try await loadedNameEvidence
-            packageTitleOverrides = try await loadedTitleOverrides
             sourceSearchRoots = try await loadedSearchRoots
             identityClusterDecisions = try await loadedClusterDecisions
             packageArtworkEvidence = try await loadedArtworkEvidence
@@ -1475,12 +1372,10 @@ public final class SpellbookModel {
             .applyingSourceConnections(sourceConnections)
             .settingUpdateAvailability(for: updateCandidates)
         let evidenceByPackage = Dictionary(grouping: packageNameEvidence, by: \.packageID)
-        let overridesByPackage = Dictionary(uniqueKeysWithValues: packageTitleOverrides.map { ($0.packageID, $0) })
         let packages = connected.packages.map { package in
             let title = resolvedPackageTitle(
                 package: package,
-                evidence: evidenceByPackage[package.id] ?? [],
-                override: overridesByPackage[package.id]
+                evidence: evidenceByPackage[package.id] ?? []
             )
             return title == package.name ? package : package.settingName(title)
         }
@@ -1517,16 +1412,10 @@ public final class SpellbookModel {
 
     private func resolvedPackageTitle(
         package: SkillPackageRecord,
-        evidence: [PackageNameEvidence],
-        override: PackageTitleOverride?
+        evidence: [PackageNameEvidence]
     ) -> String {
-        if override?.strategy == .custom,
-           let custom = override?.customTitle?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !custom.isEmpty { return custom }
         let generic = Self.isGenericPackageName(package.name)
-        let wantsRepositoryTitle = override?.strategy == .repositoryTitle
-            || preferRepositoryTitles
-            || generic
+        let wantsRepositoryTitle = preferRepositoryTitles || generic
         guard wantsRepositoryTitle else { return package.name }
         return evidence.sorted {
             if $0.confidence != $1.confidence { return $0.confidence > $1.confidence }

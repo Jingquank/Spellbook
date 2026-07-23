@@ -11,18 +11,23 @@ struct OperationHistoryRowView: View {
                 Text(operation.finishedAt, format: .relative(presentation: .named))
                     .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 if !operation.recoveryURLs.isEmpty {
-                    Button("Reveal Recovery Copy", systemImage: "archivebox", action: revealRecoveryCopy)
-                        .labelStyle(.iconOnly)
-                        .buttonStyle(.plain)
-                        .help("Reveal recovery copy")
+                    SpellbookIconButton(
+                        icon: .archive,
+                        label: "Reveal recovery copy",
+                        size: .small,
+                        frame: .compact,
+                        action: revealRecoveryCopy
+                    )
                 }
                 if operation.targetURLs.count == 1, operation.recoveryURLs.count == 1 {
-                    Button("Restore", systemImage: "arrow.uturn.backward") {
+                    SpellbookIconButton(
+                        icon: .undo,
+                        label: "Review restore",
+                        size: .small,
+                        frame: .compact
+                    ) {
                         onRestore(operation)
                     }
-                    .labelStyle(.iconOnly)
-                    .buttonStyle(.plain)
-                    .help("Review restore")
                 }
             }
         } label: {

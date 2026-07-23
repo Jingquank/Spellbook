@@ -21,6 +21,7 @@ struct SpellbookDesignTests {
         ] == [2, 4, 6, 8, 12, 16, 20, 24, 32, 48])
         #expect(SpellbookDesign.Sidebar.minimumWidth < SpellbookDesign.Sidebar.idealWidth)
         #expect(SpellbookDesign.Sidebar.idealWidth < SpellbookDesign.Sidebar.maximumWidth)
+        #expect(SpellbookDesign.Detail.fixedTitleBarHeight == 40)
         #expect(SpellbookDesign.Detail.focusedReaderWidth < SpellbookDesign.Detail.wideReaderWidth)
     }
 
@@ -34,20 +35,14 @@ struct SpellbookDesignTests {
         #expect(NSFont(name: "CommitMono-Bold", size: 13) != nil)
     }
 
-    @Test("Reader scale retains four monotonic sizes")
-    func readerScaleIsMonotonic() {
-        let sizes = ReaderTextScale.allCases.map { SpellbookDesign.Typography.editorPointSize(for: $0) }
-        #expect(sizes == [12, 13, 16, 19])
-    }
-
-    @Test("Text and focus roles meet WCAG AA in every appearance")
+    @Test("Text and interaction roles meet WCAG AA in every appearance")
     func paletteContrast() {
         let backgrounds = SpellbookDesign.Palette.canvasSeed
         let roles = [
             SpellbookDesign.Palette.primaryTextSeed,
             SpellbookDesign.Palette.secondaryTextSeed,
             SpellbookDesign.Palette.tertiaryTextSeed,
-            SpellbookDesign.Palette.blueSeed,
+            SpellbookDesign.Palette.interactionSeed,
             SpellbookDesign.Palette.successSeed,
             SpellbookDesign.Palette.warningSeed,
             SpellbookDesign.Palette.errorSeed
@@ -58,6 +53,15 @@ struct SpellbookDesignTests {
             #expect(contrast(role.highLight, backgrounds.highLight) >= 4.5)
             #expect(contrast(role.highDark, backgrounds.highDark) >= 4.5)
         }
+    }
+
+    @Test("Interaction roles use the approved warm graphite values")
+    func interactionPaletteIsGraphite() {
+        let interaction = SpellbookDesign.Palette.interactionSeed
+        #expect(interaction.light == 0x5C5E63)
+        #expect(interaction.dark == 0xBBBDB9)
+        #expect(interaction.highLight == 0x44464B)
+        #expect(interaction.highDark == 0xD4D4CF)
     }
 
     private func contrast(_ first: UInt32, _ second: UInt32) -> Double {

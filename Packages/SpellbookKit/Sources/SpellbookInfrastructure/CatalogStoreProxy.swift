@@ -154,14 +154,6 @@ public actor CatalogStoreProxy: CatalogStore {
         try await resolvedStore().savePackageNameEvidence(evidence)
     }
 
-    public func loadPackageTitleOverrides() async throws -> [PackageTitleOverride] {
-        try await resolvedStore().loadPackageTitleOverrides()
-    }
-
-    public func savePackageTitleOverrides(_ overrides: [PackageTitleOverride]) async throws {
-        try await resolvedStore().savePackageTitleOverrides(overrides)
-    }
-
     public func loadSourceSearchRoots() async throws -> [SourceSearchRootRecord] {
         try await resolvedStore().loadSourceSearchRoots()
     }

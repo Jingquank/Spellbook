@@ -327,14 +327,6 @@ public actor GRDBCatalogStore: CatalogStore {
         }
     }
 
-    public func loadPackageTitleOverrides() async throws -> [PackageTitleOverride] {
-        try loadPayloads(from: "packageTitleOverrides", orderedBy: "id")
-    }
-
-    public func savePackageTitleOverrides(_ overrides: [PackageTitleOverride]) async throws {
-        try replacePayloads(overrides, in: "packageTitleOverrides", id: \.id)
-    }
-
     public func loadSourceSearchRoots() async throws -> [SourceSearchRootRecord] {
         try loadPayloads(from: "sourceSearchRoots", orderedBy: "id")
     }
@@ -691,6 +683,11 @@ public actor GRDBCatalogStore: CatalogStore {
             }
             try db.drop(table: "artworkGalleryCandidates")
             try db.drop(table: "packageArtworkPreferences")
+        }
+        migrator.registerMigration("v11.removePackageTitleOverrides") { db in
+            if try db.tableExists("packageTitleOverrides") {
+                try db.drop(table: "packageTitleOverrides")
+            }
         }
         return migrator
     }

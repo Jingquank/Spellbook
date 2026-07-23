@@ -26,13 +26,13 @@ struct LibrarySidebarHeaderView: View {
                 Spacer(minLength: SpellbookDesign.Space.small)
                 maintenanceButton(
                     "Scan",
-                    symbol: "arrow.clockwise",
+                    icon: .refresh,
                     isDisabled: model.isScanning,
                     action: rescan
                 )
                 maintenanceButton(
                     "Check for Updates",
-                    symbol: "arrow.down.circle",
+                    icon: .downloadCircle,
                     isDisabled: model.isCheckingForUpdates || model.snapshot.skills.isEmpty,
                     action: checkForUpdates
                 )
@@ -47,7 +47,13 @@ struct LibrarySidebarHeaderView: View {
     private var libraryViewMenu: some View {
         @Bindable var model = model
 
-        return Menu {
+        return SpellbookIconMenu(
+            icon: .filterList,
+            label: "Library View",
+            size: SpellbookIconUsage.denseChrome,
+            frame: .compact,
+            colorRole: .interactive
+        ) {
             Section("Organize by") {
                 Picker("Organize by", selection: $model.viewMode) {
                     Text("Skill").tag(LibraryViewMode.skillFirst)
@@ -61,7 +67,7 @@ struct LibrarySidebarHeaderView: View {
                         model.activeSortMode = mode
                     } label: {
                         if model.activeSortMode == mode {
-                            Label(mode.displayName, systemImage: "checkmark")
+                            Label(mode.displayName, systemImage: NativeSystemSymbol.checkmark.name)
                         } else {
                             Text(mode.displayName)
                         }
@@ -72,49 +78,63 @@ struct LibrarySidebarHeaderView: View {
                 Divider()
                 Toggle("Groups First", isOn: $model.groupsFirst)
             }
-        } label: {
-            Image(systemName: "rectangle.3.group")
         }
-        .menuStyle(.borderlessButton)
-        .menuIndicator(.hidden)
-        .fixedSize()
-        .help("Library View")
-        .accessibilityLabel("Library View")
     }
 
     @ViewBuilder
     private var libraryStatus: some View {
         if model.isScanning {
-            Label("Scanning \(model.scannedFileCount) files", systemImage: "arrow.clockwise")
+            SpellbookIconLabel(
+                title: "Scanning \(model.scannedFileCount) files",
+                icon: .refresh,
+                colorRole: .secondary
+            )
                 .foregroundStyle(SpellbookDesign.Palette.textSecondary)
         } else if model.isCheckingForUpdates {
-            Label("Checking for updates", systemImage: "arrow.down.circle")
+            SpellbookIconLabel(
+                title: "Checking for updates",
+                icon: .downloadCircle,
+                colorRole: .update
+            )
                 .foregroundStyle(SpellbookDesign.Palette.update)
         } else if !model.updateCandidates.isEmpty {
             Button {
                 model.reviewAllUpdates()
             } label: {
-                Label("\(model.updateCandidates.count) updates", systemImage: "arrow.down.circle")
+                SpellbookIconLabel(
+                    title: "\(model.updateCandidates.count) updates",
+                    icon: .downloadCircle,
+                    colorRole: .update
+                )
             }
             .buttonStyle(.plain)
             .foregroundStyle(SpellbookDesign.Palette.update)
+            .sidebarHoverSurface()
         } else {
-            Label("\(model.logicalSkillCount) skills", systemImage: "checkmark.circle")
+            SpellbookIconLabel(
+                title: "\(model.logicalSkillCount) skills",
+                icon: .checkCircle,
+                colorRole: .secondary
+            )
                 .foregroundStyle(SpellbookDesign.Palette.textSecondary)
         }
     }
 
     private func maintenanceButton(
         _ label: String,
-        symbol: String,
+        icon: SpellbookIcon,
         isDisabled: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button(label, systemImage: symbol, action: action)
-            .labelStyle(.iconOnly)
-            .buttonStyle(.plain)
+        SpellbookIconButton(
+            icon: icon,
+            label: label,
+            size: SpellbookIconUsage.standardControl,
+            frame: .compact,
+            colorRole: .interactive,
+            action: action
+        )
             .disabled(isDisabled)
-            .help(label)
     }
 
     private func rescan() {

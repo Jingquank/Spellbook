@@ -40,7 +40,11 @@ struct MarkdownImageView: View {
     }
 
     private var placeholder: some View {
-        Label("\(accessibleName) unavailable", systemImage: "photo.badge.exclamationmark")
+        SpellbookIconLabel(
+            title: "\(accessibleName) unavailable",
+            icon: .imageUnavailable,
+            colorRole: .secondary
+        )
             .font(SpellbookDesign.Typography.body)
             .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             .padding(SpellbookDesign.Space.large)

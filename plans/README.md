@@ -16,4 +16,4 @@ The repository has no initial Git commit, so these plans are stamped `UNBORN`. T
 2. Execute 004, then 002 and 003; they reuse the feedback and entrance helpers.
 3. Execute 005 last and rerun the 1,000-skill performance check.
 
-All plans prohibit motion on search, core navigation, list selection, sorting, and disclosure groups.
+The original plans prohibit motion on search, core navigation, list selection, sorting, and disclosure groups. The later sidebar interaction decision supersedes only the disclosure clause: pointer-triggered package disclosure now uses a restrained 180 ms state transition, while keyboard disclosure remains instant. All other prohibitions remain in force.

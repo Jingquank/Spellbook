@@ -2,6 +2,7 @@ import SpellbookCore
 import SwiftUI
 
 struct SkillIconView: View {
+    @Environment(\.sidebarRowFocusEmphasis) private var sidebarRowFocusEmphasis
     let thumbnail: SkillThumbnail
     let size: Double
 
@@ -26,5 +27,11 @@ struct SkillIconView: View {
                 size: size
             )
         }
+        .shadow(
+            color: sidebarRowFocusEmphasis
+                ? SpellbookDesign.Palette.interaction.opacity(0.12)
+                : .clear,
+            radius: sidebarRowFocusEmphasis ? 3 : 0
+        )
     }
 }

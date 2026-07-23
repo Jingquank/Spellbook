@@ -15,10 +15,13 @@ struct MarkdownCodeBlockView: View {
 
                 Spacer()
 
-                Button("Copy code", systemImage: "doc.on.doc", action: copyCode)
-                    .labelStyle(.iconOnly)
-                    .buttonStyle(.plain)
-                    .help("Copy code")
+                SpellbookIconButton(
+                    icon: .copy,
+                    label: "Copy code",
+                    size: .small,
+                    frame: .compact,
+                    action: copyCode
+                )
             }
             .padding(.horizontal, SpellbookDesign.Space.large)
             .frame(height: SpellbookDesign.Reader.codeHeaderHeight)

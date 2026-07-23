@@ -2,7 +2,6 @@ import SpellbookCore
 import SwiftUI
 
 private enum SkillDetailSheet: Identifiable {
-    case editor(SkillInstallation)
     case removalReview(ManagedMutationPlan)
     case connectSource
     case publishingReview(PublishingPlan)
@@ -11,7 +10,6 @@ private enum SkillDetailSheet: Identifiable {
 
     var id: String {
         switch self {
-        case .editor(let installation): "editor::\(installation.id.rawValue)"
         case .removalReview(let plan): "removal::\(plan.id)"
         case .connectSource: "connect-source"
         case .publishingReview(let plan): "publishing-review::\(plan.id)"
@@ -29,31 +27,12 @@ struct SkillDetailView: View {
     @State private var presentedSheet: SkillDetailSheet?
     @State private var removalInstallation: SkillInstallation?
     @State private var mutationError: String?
-    @State private var showsCustomPackageName = false
-    @State private var customPackageName = ""
     @AppStorage(PreferenceKey.showsManagementInspector) private var showsManagementInspector = true
 
     var body: some View {
-        HStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: interfaceDensity.sectionSpacing) {
-                    SkillDetailHeaderView(
-                        skill: skill,
-                        thumbnail: model.thumbnail(for: skill),
-                        onShowManagement: { showsManagementInspector = true }
-                    )
-                    Divider()
-                    NativeMarkdownReaderView(
-                        source: model.selectedInstallation?.markdownSource ?? skill.markdownSource,
-                        assetRootURL: model.selectedInstallation?.rootURL,
-                        textScale: model.readerTextScale
-                    )
-                }
-                .frame(maxWidth: readerMaximumWidth, alignment: .leading)
-                .padding(interfaceDensity.detailInset)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
-            }
-            .accessibilityIdentifier("Skill detail")
+        HStack(alignment: .top, spacing: 0) {
+            readerPane
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if showsManagementInspector {
                 Divider()
@@ -63,10 +42,13 @@ struct SkillDetailView: View {
                         idealWidth: SpellbookDesign.Detail.inspectorIdealWidth,
                         maxWidth: SpellbookDesign.Detail.inspectorMaximumWidth
                     )
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .ignoresSafeArea(.container, edges: .top)
+                    .zIndex(1)
             }
         }
+        .ignoresSafeArea(.container, edges: .top)
         .scrollContentBackground(.visible)
-        .navigationTitle(skill.name)
         .sheet(item: $presentedSheet) { sheet in
             presentedSheetContent(sheet)
         }
@@ -88,60 +70,109 @@ struct SkillDetailView: View {
         } message: {
             Text(mutationError ?? "Unknown error")
         }
-        .alert("Package name", isPresented: $showsCustomPackageName) {
-            TextField("Name", text: $customPackageName)
-            Button("Cancel", role: .cancel) {}
-            Button("Save") {
-                Task {
-                    await model.setPackageTitleStrategy(
-                        .custom,
-                        customTitle: customPackageName,
-                        for: skill.packageID
-                    )
-                }
-            }
-            .disabled(customPackageName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        } message: {
-            Text("This name stays local and always wins over repository metadata.")
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button(
-                    showsManagementInspector ? "Hide Manage" : "Show Manage",
-                    systemImage: "sidebar.trailing"
-                ) {
-                    showsManagementInspector.toggle()
-                }
-                .labelStyle(.iconOnly)
-                .help(showsManagementInspector ? "Hide Manage" : "Show Manage")
-                .accessibilityIdentifier("Toggle Manage Inspector")
+    }
 
-                if !model.selectedSkillIsProvisionalCluster,
-                   model.updateCandidates.contains(where: { $0.packageIDs.contains(skill.packageID) }) {
-                    Button("Review Update", systemImage: "arrow.down.circle") {
-                        model.reviewUpdate(for: skill)
-                    }
-                    .labelStyle(.iconOnly)
-                    .help("Review update for this skill")
-                }
-                editControl
-
-                Menu("More", systemImage: "ellipsis") {
-                    Button("Reveal in Finder", systemImage: "folder", action: revealInFinder)
-                        .disabled(model.selectedInstallation == nil)
-                    sourceActionsMenu
-                    packageActionsMenu
-                    publishingActionsMenu
-                    manageActionsMenu
-                }
-                .labelStyle(.iconOnly)
-                .accessibilityLabel("More actions")
-            }
+    @ViewBuilder
+    private var readerPane: some View {
+        if #available(macOS 26.0, *) {
+            nativeReaderPane
+        } else {
+            legacyReaderPane
         }
     }
 
+    @available(macOS 26.0, *)
+    private var nativeReaderPane: some View {
+        ZStack(alignment: .top) {
+            readerScrollView
+                .safeAreaBar(edge: .top, spacing: 0) {
+                    Color.clear
+                        .frame(height: SpellbookDesign.Detail.fixedTitleBarHeight)
+                }
+
+            SkillDetailTopBarBackdrop()
+            topBar
+        }
+    }
+
+    private var legacyReaderPane: some View {
+        readerScrollView
+            .contentMargins(
+                .top,
+                SpellbookDesign.Detail.fixedTitleBarHeight,
+                for: .scrollContent
+            )
+            .overlay(alignment: .top) {
+                ZStack(alignment: .top) {
+                    SkillDetailTopBarBackdrop()
+                    topBar
+                }
+            }
+    }
+
+    private var readerScrollView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: interfaceDensity.sectionSpacing) {
+                SkillDetailHeaderView(
+                    skill: skill,
+                    thumbnail: model.thumbnail(for: skill),
+                    showsReviewUpdate: showsReviewUpdate,
+                    onReviewUpdate: { model.reviewUpdate(for: skill) },
+                    onShowManagement: { showsManagementInspector = true }
+                )
+                Divider()
+                NativeMarkdownReaderView(
+                    source: model.selectedInstallation?.markdownSource ?? skill.markdownSource,
+                    assetRootURL: model.selectedInstallation?.rootURL,
+                    textScale: model.readerTextScale
+                )
+            }
+            .frame(maxWidth: readerMaximumWidth, alignment: .leading)
+            .padding(interfaceDensity.detailInset)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .accessibilityIdentifier("Skill detail")
+    }
+
+    private var topBar: some View {
+        SkillDetailTopBar(
+            skillName: skill.name,
+            horizontalInset: interfaceDensity.detailInset,
+            showsManagementInspector: showsManagementInspector,
+            onToggleManagementInspector: toggleManagementInspector
+        ) {
+            moreMenu
+        }
+    }
+
+    private var moreMenu: some View {
+        SpellbookIconMenu(
+            icon: .more,
+            label: "More actions",
+            size: SpellbookIconUsage.denseChrome,
+            frame: .compact,
+            colorRole: .interactive
+        ) {
+            Button(
+                "Reveal in Finder",
+                systemImage: NativeSystemSymbol.folder.name,
+                action: revealInFinder
+            )
+            .disabled(model.selectedInstallation == nil)
+            sourceActionsMenu
+            packageActionsMenu
+            publishingActionsMenu
+            manageActionsMenu
+        }
+        .accessibilityIdentifier("More actions")
+    }
+
+    private func toggleManagementInspector() {
+        showsManagementInspector.toggle()
+    }
+
     private var sourceActionsMenu: some View {
-        Menu("Source", systemImage: "link") {
+        Menu("Source", systemImage: NativeSystemSymbol.link.name) {
             if let sourceURL = skill.sourceURL ?? skill.websiteURL {
                 Link("Open Source", destination: sourceURL)
             }
@@ -151,7 +182,7 @@ struct SkillDetailView: View {
             .disabled(model.selectedSkillIsProvisionalCluster)
             if model.sourceConnection(for: skill) != nil {
                 Divider()
-                Button("Disconnect Source", systemImage: "link.badge.minus", role: .destructive) {
+                Button("Disconnect Source", systemImage: NativeSystemSymbol.disconnect.name, role: .destructive) {
                     Task { await model.disconnectSource(for: skill) }
                 }
             }
@@ -159,20 +190,13 @@ struct SkillDetailView: View {
     }
 
     private var packageActionsMenu: some View {
-        Menu("Package", systemImage: "shippingbox") {
-            titleStrategyButton("Automatic", strategy: .automatic)
-            titleStrategyButton("Use Repository Title", strategy: .repositoryTitle)
-            Button("Use Custom Name…") {
-                customPackageName = model.snapshot.package(id: skill.packageID)?.name ?? skill.name
-                showsCustomPackageName = true
-            }
-            Divider()
-            Button("Artwork…", systemImage: "photo") { presentedSheet = .artwork }
+        Menu("Package", systemImage: NativeSystemSymbol.packageBox.name) {
+            Button("Artwork…", systemImage: NativeSystemSymbol.image.name) { presentedSheet = .artwork }
         }
     }
 
     private var publishingActionsMenu: some View {
-        Menu("Publishing", systemImage: "arrow.up.doc") {
+        Menu("Publishing", systemImage: NativeSystemSymbol.publishing.name) {
             Button("Publish Package…") {
                 Task { await preparePublishing() }
             }
@@ -185,13 +209,13 @@ struct SkillDetailView: View {
     }
 
     private var manageActionsMenu: some View {
-        Menu("Manage", systemImage: "wrench.and.screwdriver") {
+        Menu("Manage", systemImage: NativeSystemSymbol.tools.name) {
             if model.selectedSkillIsProvisionalCluster {
-                Button("Split Skill", systemImage: "rectangle.split.2x1") {
+                Button("Split Skill", systemImage: NativeSystemSymbol.split.name) {
                     Task { await model.splitSelectedSkillCluster() }
                 }
             } else if model.canMergeCompatibleCopies(of: skill) {
-                Button("Merge Compatible Copies", systemImage: "rectangle.on.rectangle") {
+                Button("Merge Compatible Copies", systemImage: NativeSystemSymbol.combine.name) {
                     Task { await model.mergeCompatibleCopies(of: skill) }
                 }
             }
@@ -201,51 +225,10 @@ struct SkillDetailView: View {
         }
     }
 
-    private func titleStrategyButton(
-        _ title: String,
-        strategy: PackageTitleStrategy
-    ) -> some View {
-        Button {
-            Task { await model.setPackageTitleStrategy(strategy, for: skill.packageID) }
-        } label: {
-            if packageTitleStrategy == strategy {
-                Label(title, systemImage: "checkmark")
-            } else {
-                Text(title)
-            }
-        }
-    }
-
-    private var packageTitleStrategy: PackageTitleStrategy {
-        model.packageTitleOverrides.first { $0.packageID == skill.packageID }?.strategy ?? .automatic
-    }
-
-    @ViewBuilder
-    private var editControl: some View {
-        if skill.installations.count > 1 {
-            Menu("Edit", systemImage: "square.and.pencil") {
-                ForEach(skill.installations) { installation in
-                    Button(installation.agent.displayName) {
-                        presentedSheet = .editor(installation)
-                    }
-                    .disabled(!installation.localState.permitsMutation)
-                }
-            }
-            .accessibilityLabel("Edit skill")
-        } else {
-            Button("Edit", systemImage: "square.and.pencil") {
-                guard let installation = skill.installations.first else { return }
-                presentedSheet = .editor(installation)
-            }
-            .disabled(skill.installations.isEmpty)
-            .disabled(skill.installations.first.map { !$0.localState.permitsMutation } ?? true)
-        }
-    }
-
     @ViewBuilder
     private var removeControl: some View {
         if skill.installations.count > 1 {
-            Menu("Remove Installation", systemImage: "trash") {
+            Menu("Remove Installation", systemImage: NativeSystemSymbol.trash.name) {
                 ForEach(skill.installations) { installation in
                     Button(installation.agent.displayName, role: .destructive) {
                         removalInstallation = installation
@@ -254,7 +237,7 @@ struct SkillDetailView: View {
                 }
             }
         } else {
-            Button("Remove Installation", systemImage: "trash", role: .destructive) {
+            Button("Remove Installation", systemImage: NativeSystemSymbol.trash.name, role: .destructive) {
                 removalInstallation = skill.installations.first
             }
             .disabled(skill.installations.isEmpty)
@@ -265,7 +248,7 @@ struct SkillDetailView: View {
     @ViewBuilder
     private var baselineControl: some View {
         if skill.installations.count > 1 {
-            Menu("Set Current as Baseline", systemImage: "checkmark.seal") {
+            Menu("Set Current as Baseline", systemImage: NativeSystemSymbol.badgeCheck.name) {
                 ForEach(skill.installations) { installation in
                     Button(installation.agent.displayName) {
                         setBaseline(installation)
@@ -274,7 +257,7 @@ struct SkillDetailView: View {
                 }
             }
         } else {
-            Button("Set Current as Baseline", systemImage: "checkmark.seal") {
+            Button("Set Current as Baseline", systemImage: NativeSystemSymbol.badgeCheck.name) {
                 guard let installation = skill.installations.first else { return }
                 setBaseline(installation)
             }
@@ -287,6 +270,11 @@ struct SkillDetailView: View {
         model.readerWidth == .focused
             ? SpellbookDesign.Detail.focusedReaderWidth
             : SpellbookDesign.Detail.wideReaderWidth
+    }
+
+    private var showsReviewUpdate: Bool {
+        !model.selectedSkillIsProvisionalCluster
+            && model.updateCandidates.contains { $0.packageIDs.contains(skill.packageID) }
     }
 
     private func revealInFinder() {
@@ -333,8 +321,6 @@ struct SkillDetailView: View {
     @ViewBuilder
     private func presentedSheetContent(_ sheet: SkillDetailSheet) -> some View {
         switch sheet {
-        case .editor(let installation):
-            SkillEditorSheet(skill: skill, installation: installation)
         case .removalReview(let plan):
             MutationPlanReviewSheet(plan: plan) { _ in
                 presentedSheet = nil
@@ -353,7 +339,10 @@ struct SkillDetailView: View {
             if let package = model.snapshot.package(id: skill.packageID) {
                 ArtworkManagerSheet(package: package)
             } else {
-                ContentUnavailableView("Package unavailable", systemImage: "shippingbox")
+                ContentUnavailableView(
+                    "Package unavailable",
+                    systemImage: NativeSystemSymbol.packageBox.name
+                )
             }
         }
     }

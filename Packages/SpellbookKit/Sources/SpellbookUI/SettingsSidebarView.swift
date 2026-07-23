@@ -19,7 +19,12 @@ struct SettingsSidebarView: View {
                             isSelected: selection == section,
                             action: { selection = section }
                         ) {
-                            Label(section.label, systemImage: section.symbolName)
+                            SpellbookIconLabel(
+                                title: section.label,
+                                icon: section.icon,
+                                size: .standard,
+                                colorRole: selection == section ? .primary : .secondary
+                            )
                                 .font(SpellbookDesign.Typography.rowLabel)
                         }
                         .accessibilityIdentifier("Settings \(section.label)")

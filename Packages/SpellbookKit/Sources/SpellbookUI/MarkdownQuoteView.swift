@@ -6,8 +6,7 @@ struct MarkdownQuoteView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: SpellbookDesign.Space.large) {
-            Image(systemName: "quote.opening")
-                .foregroundStyle(SpellbookDesign.Palette.textTertiary)
+            SpellbookIconView(icon: .quote, size: .standard, colorRole: .secondary)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: SpellbookDesign.Space.large) {

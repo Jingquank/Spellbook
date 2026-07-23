@@ -24,8 +24,11 @@ struct PublishingReviewSheet: View {
 
             List(plan.changes) { change in
                 HStack(spacing: SpellbookDesign.Space.large) {
-                    Image(systemName: change.isArtwork ? "photo" : "doc")
-                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+                    SpellbookIconView(
+                        icon: change.isArtwork ? .image : .page,
+                        size: .standard,
+                        colorRole: .secondary
+                    )
                         .frame(width: SpellbookDesign.Size.sidebarArtwork)
                     VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                         Text(change.relativePath)

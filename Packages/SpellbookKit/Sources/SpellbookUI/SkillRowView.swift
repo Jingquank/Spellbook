@@ -23,6 +23,10 @@ struct SkillRowView: View {
                 StatusIndicatorView(status: status) {
                     model.activateStatus(for: skill)
                 }
+                .sidebarHoverSurface(
+                    horizontalPadding: SpellbookDesign.Space.xSmall,
+                    verticalPadding: SpellbookDesign.Space.xSmall
+                )
             }
         }
         .contentShape(.rect)

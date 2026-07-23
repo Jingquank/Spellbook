@@ -23,4 +23,13 @@ final class SpellbookMotionTests: XCTestCase {
             accuracy: 0.000_001
         )
     }
+
+    func testSidebarMotionMatchesTheApprovedQuietBudgets() {
+        XCTAssertEqual(SpellbookMotion.sidebarHoverDuration, 0.10)
+        XCTAssertEqual(SpellbookMotion.reducedSidebarHoverDuration, 0.06)
+        XCTAssertEqual(SpellbookMotion.sidebarDisclosureDuration, 0.18)
+        XCTAssertEqual(SpellbookMotion.reducedSidebarDisclosureDuration, 0.10)
+        XCTAssertEqual(SpellbookMotion.scrollEdgeDuration, 0.12)
+        XCTAssertEqual(SpellbookMotion.reducedScrollEdgeDuration, 0.08)
+    }
 }

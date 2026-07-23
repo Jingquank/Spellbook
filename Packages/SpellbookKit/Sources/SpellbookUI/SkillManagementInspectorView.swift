@@ -41,16 +41,26 @@ enum SkillManagementState: Equatable {
         }
     }
 
-    var symbol: String {
+    var icon: SpellbookIcon {
         switch self {
-        case .clean: "checkmark.circle"
-        case .provisional: "questionmark.circle"
-        case .conflict: "exclamationmark.triangle"
-        case .actionRequired: "exclamationmark.circle"
-        case .modified: "pencil.circle"
-        case .updateAvailable: "arrow.down.circle"
-        case .missingSource: "link.badge.plus"
-        case .multipleCandidates: "point.3.connected.trianglepath.dotted"
+        case .clean: .checkCircle
+        case .provisional: .helpCircle
+        case .conflict: .warningTriangle
+        case .actionRequired: .warningCircle
+        case .modified: .edit
+        case .updateAvailable: .downloadCircle
+        case .missingSource: .linkSlash
+        case .multipleCandidates: .network
+        }
+    }
+
+    var iconColorRole: SpellbookIconColorRole {
+        switch self {
+        case .clean: .success
+        case .provisional, .missingSource, .multipleCandidates: .warning
+        case .modified: .secondary
+        case .updateAvailable: .update
+        case .conflict, .actionRequired: .error
         }
     }
 
@@ -131,7 +141,10 @@ struct SkillManagementInspectorView: View {
 
     private var stateSection: some View {
         VStack(alignment: .leading, spacing: SpellbookDesign.Space.medium) {
-            Label(state.label, systemImage: state.symbol)
+            HStack(spacing: SpellbookDesign.Space.medium) {
+                SpellbookIconView(icon: state.icon, size: .standard, colorRole: state.iconColorRole)
+                Text(state.label)
+            }
                 .font(SpellbookDesign.Typography.sectionTitle)
                 .foregroundStyle(state.tint)
             Text(state.guidance)

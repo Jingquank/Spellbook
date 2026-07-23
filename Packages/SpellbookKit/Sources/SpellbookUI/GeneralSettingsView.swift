@@ -20,7 +20,9 @@ struct GeneralSettingsView: View {
                             .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                     }
                 }
-                Button("Scan Now", systemImage: "arrow.clockwise", action: rescan)
+                Button(action: rescan) {
+                    SpellbookIconLabel(title: "Scan Now", icon: .refresh)
+                }
                     .disabled(model.isScanning)
             }
 
@@ -31,10 +33,16 @@ struct GeneralSettingsView: View {
 
             if let catalogError = model.catalogError {
                 Section("Catalog") {
-                    Label(catalogError, systemImage: "exclamationmark.triangle")
+                    SpellbookIconLabel(
+                        title: catalogError,
+                        icon: .warningTriangle,
+                        colorRole: .warning
+                    )
                         .foregroundStyle(SpellbookDesign.Palette.textSecondary)
-                    Button("Preserve and Rebuild Index", systemImage: "arrow.triangle.2.circlepath") {
+                    Button {
                         Task { await model.rebuildCatalog() }
+                    } label: {
+                        SpellbookIconLabel(title: "Preserve and Rebuild Index", icon: .refreshDouble)
                     }
                 }
             }
@@ -47,8 +55,10 @@ struct GeneralSettingsView: View {
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
-                    Button("Reveal in Finder", systemImage: "folder") {
+                    Button {
                         NSWorkspace.shared.activateFileViewerSelecting([preservedCatalogURL])
+                    } label: {
+                        SpellbookIconLabel(title: "Reveal in Finder", icon: .folder)
                     }
                 }
             }

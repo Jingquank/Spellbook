@@ -14,10 +14,6 @@ extension ReaderTextScale {
         SpellbookDesign.Typography.readerCode(for: self)
     }
 
-    var editorPointSize: Double {
-        SpellbookDesign.Typography.editorPointSize(for: self)
-    }
-
     func headingFont(level: Int) -> Font {
         SpellbookDesign.Typography.readerHeading(level: level, scale: self)
     }

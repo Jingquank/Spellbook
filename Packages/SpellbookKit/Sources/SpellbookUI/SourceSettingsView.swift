@@ -23,7 +23,9 @@ struct SourceSettingsView: View {
                     }
                 }
 
-                Button("Add Folder…", systemImage: "folder.badge.plus", action: showFolderImporter)
+                Button(action: showFolderImporter) {
+                    SpellbookIconLabel(title: "Add Folder…", icon: .folderPlus)
+                }
 
                 if customRoots.isEmpty {
                     Text("No additional folders")
@@ -31,12 +33,15 @@ struct SourceSettingsView: View {
                 } else {
                     ForEach(customRoots) { root in
                         LabeledContent {
-                            Button("Stop Scanning", systemImage: "minus.circle") {
+                            SpellbookIconButton(
+                                icon: .minusCircle,
+                                label: "Stop scanning this folder",
+                                size: .small,
+                                frame: .compact,
+                                colorRole: .interactive
+                            ) {
                                 remove(root)
                             }
-                            .labelStyle(.iconOnly)
-                            .buttonStyle(.plain)
-                            .help("Stop scanning this folder")
                         } label: {
                             VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                                 Text(root.agent.displayName)
@@ -51,7 +56,11 @@ struct SourceSettingsView: View {
                 }
 
                 if let rootError = model.rootError ?? importerError {
-                    Label(rootError, systemImage: "exclamationmark.triangle")
+                    SpellbookIconLabel(
+                        title: rootError,
+                        icon: .warningTriangle,
+                        colorRole: .warning
+                    )
                         .font(SpellbookDesign.Typography.metadata)
                         .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }
@@ -74,11 +83,15 @@ struct SourceSettingsView: View {
 
                 ForEach(model.sourceSearchRoots) { root in
                     LabeledContent {
-                        Button("Remove", systemImage: "minus.circle") {
+                        SpellbookIconButton(
+                            icon: .minusCircle,
+                            label: "Remove",
+                            size: .small,
+                            frame: .compact,
+                            colorRole: .interactive
+                        ) {
                             Task { await model.removeSourceSearchRoot(root) }
                         }
-                        .labelStyle(.iconOnly)
-                        .buttonStyle(.plain)
                     } label: {
                         Text(root.url.path)
                             .font(SpellbookDesign.Typography.codeMetadata)
@@ -86,8 +99,10 @@ struct SourceSettingsView: View {
                             .truncationMode(.middle)
                     }
                 }
-                Button("Add Trusted Code Root…", systemImage: "folder.badge.plus") {
+                Button {
                     showsSourceRootImporter = true
+                } label: {
+                    SpellbookIconLabel(title: "Add Trusted Code Root…", icon: .folderPlus)
                 }
                 Toggle("Search entire user directory with Spotlight", isOn: $model.searchesEntireHome)
                 Text("Off by default. Spellbook never expands beyond the trusted roots above unless you explicitly enable this option.")
@@ -114,7 +129,11 @@ struct SourceSettingsView: View {
                         .disabled(publishingRepository.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 if let publishingError {
-                    Label(publishingError, systemImage: "exclamationmark.triangle")
+                    SpellbookIconLabel(
+                        title: publishingError,
+                        icon: .warningTriangle,
+                        colorRole: .warning
+                    )
                         .font(SpellbookDesign.Typography.metadata)
                         .foregroundStyle(SpellbookDesign.Palette.textSecondary)
                 }

@@ -89,7 +89,11 @@ struct SkillProvenanceView: View {
             }
 
             if let error = model.sourceDiscoveryError ?? connectionError {
-                Label(error, systemImage: "exclamationmark.triangle")
+                SpellbookIconLabel(
+                    title: error,
+                    icon: .warningTriangle,
+                    colorRole: .warning
+                )
                     .font(SpellbookDesign.Typography.metadata)
                     .foregroundStyle(SpellbookDesign.Palette.textSecondary)
             }

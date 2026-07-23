@@ -31,11 +31,12 @@ enum SpellbookDesign {
     }
 
     enum Size {
-        static let compactIcon = 12.0
-        static let icon = 16.0
+        static let compactIcon = SpellbookIconSize.compact.points
+        static let icon = SpellbookIconSize.standard.points
         static let sidebarArtwork = 18.0
         static let emphasizedArtwork = 20.0
-        static let largeArtwork = 22.0
+        static let agentMark = 22.0
+        static let largeArtwork = agentMark
         static let detailArtwork = 42.0
     }
 
@@ -103,21 +104,6 @@ enum SpellbookDesign {
             return interface(base + offset, relativeTo: level == 1 ? .title2 : .headline, weight: .bold)
         }
 
-        static func editorPointSize(for scale: ReaderTextScale) -> Double {
-            switch scale {
-            case .small: 12
-            case .standard: 13
-            case .large: 16
-            case .extraLarge: 19
-            }
-        }
-
-        static func editorFont(size: Double, bold: Bool = false) -> NSFont {
-            let name = bold ? "CommitMono-Bold" : "CommitMono-Regular"
-            return NSFont(name: name, size: size)
-                ?? NSFont.monospacedSystemFont(ofSize: size, weight: bold ? .bold : .regular)
-        }
-
         private static func interface(
             _ size: Double,
             relativeTo style: Font.TextStyle,
@@ -154,7 +140,9 @@ enum SpellbookDesign {
         static let tertiaryTextSeed = Seed(light: 0x717378, dark: 0x8F908E, highLight: 0x64666B, highDark: 0xA7A8A5)
         static let separatorSeed = Seed(light: 0xDAD9D5, dark: 0x47484D, highLight: 0xC7C6C1, highDark: 0x5B5C62)
         static let disabledSeed = Seed(light: 0xA5A6A4, dark: 0x747579, highLight: 0x8D8E8C, highDark: 0x8A8B90)
-        static let blueSeed = Seed(light: 0x356CA8, dark: 0x78A7D8, highLight: 0x245C98, highDark: 0x91BCE7)
+        static let interactionSeed = Seed(light: 0x5C5E63, dark: 0xBBBDB9, highLight: 0x44464B, highDark: 0xD4D4CF)
+        static let focusWashSeed = Seed(light: 0xF0EFED, dark: 0x2F3035, highLight: 0xE5E4E0, highDark: 0x3B3C42)
+        static let focusKeylineSeed = Seed(light: 0xA7A7A7, dark: 0x767877, highLight: 0x76787C, highDark: 0xA8A9A5)
         static let successSeed = Seed(light: 0x2F7651, dark: 0x69B88B, highLight: 0x236440, highDark: 0x82CCA2)
         static let warningSeed = Seed(light: 0x9A5A12, dark: 0xE2A052, highLight: 0x814704, highDark: 0xF2B66D)
         static let errorSeed = Seed(light: 0xAB4138, dark: 0xE17A72, highLight: 0x922E28, highDark: 0xF0948D)
@@ -172,9 +160,12 @@ enum SpellbookDesign {
         static let textTertiary = dynamic(tertiaryTextSeed)
         static let separator = dynamic(separatorSeed)
         static let disabled = dynamic(disabledSeed)
-        static let focus = dynamic(blueSeed)
-        static let link = dynamic(blueSeed)
-        static let update = dynamic(blueSeed)
+        static let interaction = dynamic(interactionSeed)
+        static let focus = interaction
+        static let focusWash = dynamic(focusWashSeed)
+        static let focusKeyline = dynamic(focusKeylineSeed)
+        static let link = interaction
+        static let update = interaction
         static let success = dynamic(successSeed)
         static let warning = dynamic(warningSeed)
         static let error = dynamic(errorSeed)
@@ -219,11 +210,13 @@ enum SpellbookDesign {
         static let comfortableRowHeight = 39.0
         static let artworkSize = Size.largeArtwork
         static let searchFieldHeight = 28.0
+        static let scrollEdgeVeilHeight = 18.0
         static let headerHorizontalInset = Space.large
         static let headerVerticalInset = Space.medium
     }
 
     enum Detail {
+        static let fixedTitleBarHeight = 40.0
         static let compactInset = 30.0
         static let comfortableInset = 36.0
         static let compactSectionSpacing = 22.0
@@ -263,7 +256,6 @@ enum SpellbookDesign {
         static let xWideWidth = 560.0
         static let reviewWidth = 620.0
         static let updateMinimumWidth = 480.0
-        static let editorWidth = 760.0
         static let comparisonWidth = 780.0
         static let compactHeight = 280.0
         static let shortHeight = 300.0
@@ -272,12 +264,10 @@ enum SpellbookDesign {
         static let sourceIdealHeight = 420.0
         static let reviewHeight = 440.0
         static let tallHeight = 460.0
-        static let editorHeight = 480.0
         static let xTallHeight = 520.0
         static let comparisonIdealHeight = 560.0
         static let maximumHeight = 600.0
         static let updateContentMinimumHeight = 260.0
-        static let editorMinimumHeight = 160.0
     }
 
     enum Reader {

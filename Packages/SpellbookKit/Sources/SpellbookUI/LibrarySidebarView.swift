@@ -6,82 +6,19 @@ struct LibrarySidebarView: View {
     @Environment(\.openSettings) private var openSettings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.interfaceDensity) private var interfaceDensity
-
     @State private var hasShownNonemptyLibrary = false
     @State private var firstRevealStage = 0
+    @State private var scrollMetrics = SidebarScrollMetrics()
 
     var body: some View {
         @Bindable var model = model
 
-        VStack(spacing: 0) {
-            LibrarySidebarHeaderView()
-
-            if let scanError = model.scanError, model.snapshot.skills.isEmpty {
-                ContentUnavailableView(
-                    "Couldn’t scan skills",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text(scanError)
-                )
-            } else if model.snapshot.skills.isEmpty, !model.isScanning {
-                ContentUnavailableView {
-                    Label("No skills found", systemImage: "books.vertical")
-                } description: {
-                    Text("Spellbook checks the known Claude, Cursor, and Codex skill folders on this Mac.")
-                } actions: {
-                    Button("Scan Again", systemImage: "arrow.clockwise", action: rescan)
-                }
-            } else if model.projection.nodes.isEmpty {
-                ContentUnavailableView.search
-            } else if isAwaitingFirstReveal {
-                ZStack {
-                    ProgressView("Loading skills…")
-                        .opacity(firstRevealStage == 0 ? 1 : 0)
-                        .allowsHitTesting(false)
-
-                    libraryScrollView
-                        .opacity(firstRevealStage == 2 ? 1 : 0)
-                }
+        Group {
+            if #available(macOS 26.0, *), showsScrollableLibrary {
+                nativeScrollableSidebar
             } else {
-                libraryScrollView
+                standardSidebar
             }
-
-            Divider()
-
-            HStack(spacing: SpellbookDesign.Space.medium) {
-                if model.isScanning {
-                    ProgressView()
-                        .controlSize(.small)
-                        .accessibilityLabel("Scanning skills")
-                    Text("Scanning \(model.scannedFileCount) files")
-                        .foregroundStyle(SpellbookDesign.Palette.textPrimary)
-                } else {
-                    Text("\(model.logicalSkillCount) skills · \(model.installationCount) installations")
-                        .foregroundStyle(SpellbookDesign.Palette.textSecondary)
-                }
-
-                Spacer()
-
-                if !model.updateCandidates.isEmpty {
-                    Button("\(model.updateCandidates.count) updates") {
-                        model.reviewAllUpdates()
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(SpellbookDesign.Palette.textPrimary)
-                } else if model.isCheckingForUpdates {
-                    ProgressView()
-                        .controlSize(.small)
-                        .accessibilityLabel("Checking for updates")
-                }
-
-                Button("Settings", systemImage: "gearshape", action: showSettings)
-                    .labelStyle(.iconOnly)
-                    .buttonStyle(.plain)
-                    .help("Settings")
-            }
-            .font(SpellbookDesign.Typography.metadata)
-            .padding(.horizontal, SpellbookDesign.Space.large)
-            .padding(.vertical, SpellbookDesign.Space.xSmall)
-            .frame(minHeight: interfaceDensity == .compact ? 34 : 44)
         }
         .background(SpellbookDesign.Palette.sidebar)
         .task(id: model.searchText) {
@@ -97,6 +34,123 @@ struct LibrarySidebarView: View {
         }
     }
 
+    private var standardSidebar: some View {
+        VStack(spacing: 0) {
+            LibrarySidebarHeaderView()
+
+            libraryContent
+
+            Divider()
+            sidebarFooter
+        }
+    }
+
+    @available(macOS 26.0, *)
+    private var nativeScrollableSidebar: some View {
+        ZStack {
+            if model.projection.nodes.isEmpty {
+                ContentUnavailableView.search
+            } else if isAwaitingFirstReveal {
+                ProgressView("Loading skills…")
+                    .opacity(firstRevealStage == 0 ? 1 : 0)
+                    .allowsHitTesting(false)
+
+                nativeLibraryScrollView
+                    .opacity(firstRevealStage == 2 ? 1 : 0)
+            } else {
+                nativeLibraryScrollView
+            }
+        }
+        .safeAreaBar(edge: .top, spacing: 0) {
+            LibrarySidebarHeaderView()
+        }
+        .safeAreaBar(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                Divider()
+                sidebarFooter
+            }
+        }
+        .scrollEdgeEffectStyle(.soft, for: .vertical)
+    }
+
+    @ViewBuilder
+    private var libraryContent: some View {
+        if let scanError = model.scanError, model.snapshot.skills.isEmpty {
+            ContentUnavailableView(
+                "Couldn’t scan skills",
+                systemImage: NativeSystemSymbol.warning.name,
+                description: Text(scanError)
+            )
+        } else if model.snapshot.skills.isEmpty, !model.isScanning {
+            ContentUnavailableView {
+                Label("No skills found", systemImage: NativeSystemSymbol.bookStack.name)
+            } description: {
+                Text("Spellbook checks the known Claude, Cursor, and Codex skill folders on this Mac.")
+            } actions: {
+                Button(
+                    "Scan Again",
+                    systemImage: NativeSystemSymbol.refresh.name,
+                    action: rescan
+                )
+            }
+        } else if model.projection.nodes.isEmpty {
+            ContentUnavailableView.search
+        } else if isAwaitingFirstReveal {
+            ZStack {
+                ProgressView("Loading skills…")
+                    .opacity(firstRevealStage == 0 ? 1 : 0)
+                    .allowsHitTesting(false)
+
+                libraryScrollView
+                    .opacity(firstRevealStage == 2 ? 1 : 0)
+            }
+        } else {
+            libraryScrollView
+        }
+    }
+
+    private var sidebarFooter: some View {
+        HStack(spacing: SpellbookDesign.Space.medium) {
+            if model.isScanning {
+                ProgressView()
+                    .controlSize(.small)
+                    .accessibilityLabel("Scanning skills")
+                Text("Scanning \(model.scannedFileCount) files")
+                    .foregroundStyle(SpellbookDesign.Palette.textPrimary)
+            } else {
+                Text("\(model.logicalSkillCount) skills · \(model.installationCount) installations")
+                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+            }
+
+            Spacer()
+
+            if !model.updateCandidates.isEmpty {
+                Button("\(model.updateCandidates.count) updates") {
+                    model.reviewAllUpdates()
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(SpellbookDesign.Palette.textPrimary)
+                .sidebarHoverSurface()
+            } else if model.isCheckingForUpdates {
+                ProgressView()
+                    .controlSize(.small)
+                    .accessibilityLabel("Checking for updates")
+            }
+
+            SpellbookIconButton(
+                icon: .settings,
+                label: "Settings",
+                size: .small,
+                frame: .compact,
+                action: showSettings
+            )
+        }
+        .font(SpellbookDesign.Typography.metadata)
+        .padding(.horizontal, SpellbookDesign.Space.large)
+        .padding(.vertical, SpellbookDesign.Space.xSmall)
+        .frame(minHeight: interfaceDensity == .compact ? 34 : 44)
+    }
+
     private func rescan() {
         Task {
             await model.rescan()
@@ -107,17 +161,67 @@ struct LibrarySidebarView: View {
         openSettings()
     }
 
+    @ViewBuilder
     private var libraryScrollView: some View {
+        if #available(macOS 26.0, *) {
+            nativeLibraryScrollView
+        } else {
+            legacyLibraryScrollView
+        }
+    }
+
+    @available(macOS 26.0, *)
+    private var nativeLibraryScrollView: some View {
         ScrollView {
-            VStack(spacing: SpellbookDesign.Sidebar.rowSpacing) {
-                ForEach(model.projection.nodes) { node in
-                    LibraryNodeView(node: node)
-                }
-            }
-            .padding(.horizontal, SpellbookDesign.Sidebar.horizontalInset)
-            .padding(.vertical, SpellbookDesign.Sidebar.verticalInset)
+            libraryRows
         }
         .accessibilityIdentifier("Library sidebar")
+    }
+
+    private var libraryRows: some View {
+        VStack(spacing: SpellbookDesign.Sidebar.rowSpacing) {
+            ForEach(model.projection.nodes) { node in
+                LibraryNodeView(node: node)
+                    .id(node.id)
+            }
+        }
+        .padding(.horizontal, SpellbookDesign.Sidebar.horizontalInset)
+        .padding(.vertical, SpellbookDesign.Sidebar.verticalInset)
+    }
+
+    private var legacyLibraryScrollView: some View {
+        GeometryReader { viewport in
+            let edgeVisibility = SidebarScrollEdgeVisibility(metrics: scrollMetrics)
+
+            ZStack(alignment: .top) {
+                ScrollView {
+                    libraryRows
+                        .background {
+                            GeometryReader { content in
+                                Color.clear.preference(
+                                    key: SidebarScrollMetricsKey.self,
+                                    value: SidebarScrollMetrics(
+                                        contentMinY: content.frame(in: .named("LibrarySidebarScroll")).minY,
+                                        contentHeight: content.size.height,
+                                        viewportHeight: viewport.size.height
+                                    )
+                                )
+                            }
+                        }
+                }
+                .coordinateSpace(name: "LibrarySidebarScroll")
+                .accessibilityIdentifier("Library sidebar")
+
+                VStack(spacing: 0) {
+                    SidebarScrollEdgeVeil(edge: .top, isVisible: edgeVisibility.showsTop)
+                    Spacer()
+                    SidebarScrollEdgeVeil(edge: .bottom, isVisible: edgeVisibility.showsBottom)
+                }
+            }
+            .onPreferenceChange(SidebarScrollMetricsKey.self) {
+                scrollMetrics = $0
+            }
+        }
     }
 
     private var firstRevealEligibility: Bool {
@@ -125,6 +229,11 @@ struct LibrarySidebarView: View {
             && !model.isScanning
             && model.scanError == nil
             && !model.projection.nodes.isEmpty
+    }
+
+    private var showsScrollableLibrary: Bool {
+        model.scanError == nil
+            && !model.snapshot.skills.isEmpty
     }
 
     private var isAwaitingFirstReveal: Bool {

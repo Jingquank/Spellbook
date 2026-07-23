@@ -5,6 +5,47 @@ import XCTest
 @testable import SpellbookInfrastructure
 
 final class GRDBCatalogStoreTests: XCTestCase {
+    func testMigratesV9CatalogByRemovingPackageTitleOverrides() async throws {
+        let fixture = try TemporarySkillLibrary()
+        let databaseURL = fixture.url.appending(path: "Spellbook.sqlite")
+        let legacyDatabase = try DatabaseQueue(path: databaseURL.path)
+        try await legacyDatabase.write { db in
+            try db.execute(sql: "CREATE TABLE grdb_migrations (identifier TEXT NOT NULL PRIMARY KEY)")
+            for identifier in [
+                "v1.catalog",
+                "v2.discoveryRoots",
+                "v3.operations",
+                "v4.baselines",
+                "v5.sources",
+                "v6.provenanceAndArtwork",
+                "v7.publishing",
+                "v8.identityNamingAndReceipts",
+                "v9.sidebarArtworkAndSorting"
+            ] {
+                try db.execute(
+                    sql: "INSERT INTO grdb_migrations (identifier) VALUES (?)",
+                    arguments: [identifier]
+                )
+            }
+            try db.execute(sql: "CREATE TABLE packageTitleOverrides (id TEXT PRIMARY KEY, payload BLOB NOT NULL)")
+            try db.execute(
+                sql: "INSERT INTO packageTitleOverrides (id, payload) VALUES (?, ?)",
+                arguments: ["package-one", Data(#"{"strategy":"custom","customTitle":"Local"}"#.utf8)]
+            )
+            try db.execute(sql: "CREATE TABLE artworkGalleryCandidates (id TEXT PRIMARY KEY, createdAt DATETIME NOT NULL, payload BLOB NOT NULL)")
+            try db.execute(sql: "CREATE TABLE packageArtworkPreferences (id TEXT PRIMARY KEY, payload BLOB NOT NULL)")
+            try db.execute(sql: "CREATE TABLE artworkReferences (id TEXT PRIMARY KEY, payload BLOB NOT NULL)")
+        }
+
+        _ = try GRDBCatalogStore(databaseURL: databaseURL)
+
+        let migratedDatabase = try DatabaseQueue(path: databaseURL.path)
+        let tableExists = try await migratedDatabase.read { db in
+            try db.tableExists("packageTitleOverrides")
+        }
+        XCTAssertFalse(tableExists)
+    }
+
     func testPersistsCatalogAcrossStoreInstancesAndSearchesMarkdown() async throws {
         let fixture = try TemporarySkillLibrary()
         let databaseURL = fixture.url.appending(path: "catalog/Spellbook.sqlite")

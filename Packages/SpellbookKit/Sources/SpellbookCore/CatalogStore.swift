@@ -36,8 +36,6 @@ public protocol CatalogStore: Sendable {
     func saveInstallerPackageReceipts(_ receipts: [InstallerPackageReceipt]) async throws
     func loadPackageNameEvidence() async throws -> [PackageNameEvidence]
     func savePackageNameEvidence(_ evidence: [PackageNameEvidence]) async throws
-    func loadPackageTitleOverrides() async throws -> [PackageTitleOverride]
-    func savePackageTitleOverrides(_ overrides: [PackageTitleOverride]) async throws
     func loadSourceSearchRoots() async throws -> [SourceSearchRootRecord]
     func saveSourceSearchRoots(_ roots: [SourceSearchRootRecord]) async throws
     func loadIdentityClusterDecisions() async throws -> [IdentityClusterDecision]
@@ -71,8 +69,6 @@ public extension CatalogStore {
     func saveInstallerPackageReceipts(_ receipts: [InstallerPackageReceipt]) async throws {}
     func loadPackageNameEvidence() async throws -> [PackageNameEvidence] { [] }
     func savePackageNameEvidence(_ evidence: [PackageNameEvidence]) async throws {}
-    func loadPackageTitleOverrides() async throws -> [PackageTitleOverride] { [] }
-    func savePackageTitleOverrides(_ overrides: [PackageTitleOverride]) async throws {}
     func loadSourceSearchRoots() async throws -> [SourceSearchRootRecord] { [] }
     func saveSourceSearchRoots(_ roots: [SourceSearchRootRecord]) async throws {}
     func loadIdentityClusterDecisions() async throws -> [IdentityClusterDecision] { [] }

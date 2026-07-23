@@ -1,13 +1,5 @@
 import Foundation
 
-public enum PackageTitleStrategy: String, CaseIterable, Codable, Hashable, Sendable, Identifiable {
-    case automatic
-    case repositoryTitle
-    case custom
-
-    public var id: String { rawValue }
-}
-
 public struct PackageNameEvidence: Identifiable, Hashable, Codable, Sendable {
     public let id: String
     public let packageID: PackageID
@@ -36,19 +28,6 @@ public struct PackageNameEvidence: Identifiable, Hashable, Codable, Sendable {
         self.revision = revision
         self.confidence = confidence
         self.observedAt = observedAt
-    }
-}
-
-public struct PackageTitleOverride: Identifiable, Hashable, Codable, Sendable {
-    public var id: String { packageID.rawValue }
-    public let packageID: PackageID
-    public let strategy: PackageTitleStrategy
-    public let customTitle: String?
-
-    public init(packageID: PackageID, strategy: PackageTitleStrategy, customTitle: String? = nil) {
-        self.packageID = packageID
-        self.strategy = strategy
-        self.customTitle = customTitle
     }
 }
 

@@ -23,12 +23,12 @@ struct SelectableSkillRow: View {
         SkillRowView(skill: skill)
             .padding(.leading, isIndented ? SpellbookDesign.Space.large : SpellbookDesign.Sidebar.horizontalInset)
             .padding(.trailing, SpellbookDesign.Sidebar.horizontalInset)
-            .sidebarSelectionBackground(isSelected: isSelected)
             .contentShape(.rect)
             .onTapGesture {
                 model.select(skill)
             }
             .focusable()
+            .sidebarSelectionBackground(isSelected: isSelected)
             .onKeyPress(.return) {
                 model.select(skill)
                 return .handled

@@ -1,39 +1,46 @@
+import AppKit
 import SpellbookCore
 import SwiftUI
 
 struct AgentIconView: View {
+    @Environment(\.colorScheme) private var colorScheme
     let agent: AgentKind
 
     var body: some View {
-        Image(systemName: symbolName)
-            .font(SpellbookDesign.Typography.micro.weight(.semibold))
-            .foregroundStyle(foregroundStyle)
-            .frame(width: SpellbookDesign.Sidebar.artworkSize, height: SpellbookDesign.Sidebar.artworkSize)
-            .background(backgroundStyle, in: .rect(cornerRadius: SpellbookDesign.Radius.xSmall))
-            .accessibilityLabel(agent.displayName)
+        Group {
+            if let image = bundledImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+            }
+        }
+        .frame(width: SpellbookDesign.Size.agentMark, height: SpellbookDesign.Size.agentMark)
+        .accessibilityLabel(agent.displayName)
     }
 
-    private var symbolName: String {
+    private var assetName: String {
         switch agent {
-        case .claude: "sparkle"
-        case .cursor: "cursorarrow.rays"
-        case .codex: "chevron.left.forwardslash.chevron.right"
+        case .claude: "agent-claude-code"
+        case .cursor: "agent-cursor"
+        case .codex: "agent-codex"
         }
     }
 
-    private var foregroundStyle: Color {
-        switch agent {
-        case .claude: Color(red: 0.20, green: 0.09, blue: 0.03)
-        case .cursor: .white
-        case .codex: .primary
+    private var bundledImage: NSImage? {
+        if let catalogImage = Bundle.module.image(forResource: assetName) {
+            return catalogImage
         }
-    }
-
-    private var backgroundStyle: Color {
-        switch agent {
-        case .claude: .orange
-        case .cursor: .black
-        case .codex: SpellbookDesign.Palette.grouped
+        let filename = switch agent {
+        case .claude: "agent-claude-code.png"
+        case .codex: "agent-codex.png"
+        case .cursor:
+            colorScheme == .dark ? "agent-cursor-dark.png" : "agent-cursor-light.png"
         }
+        let url = Bundle.module.resourceURL?
+            .appending(path: "Icons.xcassets")
+            .appending(path: "\(assetName).imageset")
+            .appending(path: filename)
+        return url.flatMap(NSImage.init(contentsOf:))
     }
 }

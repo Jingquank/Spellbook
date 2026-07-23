@@ -10,8 +10,11 @@ struct MutationPlanTargetView: View {
                 .padding(.top, SpellbookDesign.Space.medium)
         } label: {
             HStack(spacing: SpellbookDesign.Space.large) {
-                Image(systemName: target.action == .remove ? "trash" : "doc.text")
-                    .foregroundStyle(SpellbookDesign.Palette.textSecondary)
+                SpellbookIconView(
+                    icon: target.action == .remove ? .trash : .page,
+                    size: .standard,
+                    colorRole: .secondary
+                )
                     .frame(width: SpellbookDesign.Size.icon)
                 VStack(alignment: .leading, spacing: SpellbookDesign.Space.micro) {
                     Text(target.destinationURL.lastPathComponent)

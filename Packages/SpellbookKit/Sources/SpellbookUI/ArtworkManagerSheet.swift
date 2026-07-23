@@ -37,14 +37,22 @@ struct ArtworkManagerSheet: View {
             Divider()
 
             HStack {
-                Button(upload == nil ? "Upload…" : "Replace…", systemImage: "square.and.arrow.down") {
+                Button {
                     importsArtwork = true
+                } label: {
+                    SpellbookIconLabel(
+                        title: upload == nil ? "Upload…" : "Replace…",
+                        icon: .upload,
+                        colorRole: .primary
+                    )
                 }
                 .buttonStyle(.borderedProminent)
 
                 if upload != nil {
-                    Button("Remove Upload", systemImage: "trash", role: .destructive) {
+                    Button(role: .destructive) {
                         confirmsRemoval = true
+                    } label: {
+                        SpellbookIconLabel(title: "Remove Upload", icon: .trash, colorRole: .error)
                     }
                     .buttonStyle(.bordered)
                 }
