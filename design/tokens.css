@@ -1,0 +1,340 @@
+/* Spellbook design tokens.
+ *
+ * The single source of app-owned visual constants, in three layers:
+ * primitives, semantic roles, component recipes. Ported 1:1 from the
+ * macOS `SpellbookDesign` / `SpellbookMotion` enums; 1 pt maps to 1 px.
+ *
+ * Palette has four variants: light, dark, and an Increase Contrast pair.
+ * Resolution order: explicit [data-theme] wins, then prefers-contrast,
+ * then prefers-color-scheme.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ---- Primitives: space ---- */
+  --sb-space-2: 2px;
+  --sb-space-4: 4px;
+  --sb-space-6: 6px;
+  --sb-space-8: 8px;
+  --sb-space-12: 12px;
+  --sb-space-16: 16px;
+  --sb-space-20: 20px;
+  --sb-space-24: 24px;
+  --sb-space-32: 32px;
+  --sb-space-48: 48px;
+
+  /* ---- Primitives: radius ---- */
+  --sb-radius-small: 4px;
+  --sb-radius-medium: 6px;
+  --sb-radius-large: 8px;
+  --sb-radius-xlarge: 10px;
+  --sb-radius-sheet: 12px;
+
+  /* ---- Primitives: stroke ---- */
+  --sb-stroke-hairline: 0.5px;
+  --sb-stroke: 1px;
+
+  /* ---- Primitives: icon geometry ---- */
+  --sb-icon-micro: 10px;
+  --sb-icon-compact: 12px;
+  --sb-icon-small: 14px;
+  --sb-icon-standard: 16px;
+  --sb-icon-large: 20px;
+  --sb-agent-mark: 22px;
+  --sb-icon-frame-compact: 24px;
+  --sb-icon-frame-standard: 28px;
+  --sb-icon-frame-prominent: 32px;
+
+  /* ---- Typography families ---- */
+  --sb-font-ui: "Schibsted Grotesk", ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  --sb-font-code: "Commit Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ---- Typography roles: size ---- */
+  --sb-type-micro: 11px;
+  --sb-type-metadata: 12px;
+  --sb-type-control: 14px;
+  --sb-type-row-label: 14px;
+  --sb-type-body: 14px;
+  --sb-type-reader-body: 15px;
+  --sb-type-section-title: 15px;
+  --sb-type-sheet-title: 22px;
+  --sb-type-detail-title: 24px;
+  --sb-type-code-metadata: 12px;
+  --sb-type-code-body: 13px;
+
+  /* ---- Typography roles: weight ---- */
+  --sb-weight-regular: 400;
+  --sb-weight-medium: 500;
+  --sb-weight-semibold: 600;
+  --sb-weight-bold: 700;
+
+  /* ---- Typography roles: reader rhythm ---- */
+  --sb-reader-line-height: 1.55;
+  --sb-reader-measure: 68ch;
+
+  /* ---- Motion ---- */
+  --sb-ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* strong ease-out */
+  --sb-duration-feedback: 160ms;
+  --sb-duration-hover: 100ms;
+  --sb-duration-disclosure: 180ms;
+  --sb-duration-scroll-edge: 120ms;
+  --sb-duration-candidate-in: 180ms;
+  --sb-duration-candidate-out: 140ms;
+  --sb-duration-reveal-in: 180ms;
+  --sb-duration-reveal-out: 100ms;
+
+  /* ---- Component recipes ---- */
+  --sb-sidebar-width-min: 240px;
+  --sb-sidebar-width-ideal: 260px;
+  --sb-sidebar-width-max: 300px;
+  --sb-sidebar-row-compact: 31px;
+  --sb-sidebar-row-comfortable: 39px;
+  --sb-sidebar-artwork: 18px;
+  --sb-sidebar-inset-x: 6px;
+  --sb-sidebar-inset-y: 4px;
+  --sb-settings-row-compact: 44px;
+  --sb-settings-row-comfortable: 52px;
+  --sb-title-bar-height: 40px;
+  --sb-reader-inset-compact: 30px;
+  --sb-reader-inset-comfortable: 36px;
+  --sb-reader-width-focused: 760px;
+  --sb-reader-width-wide: 980px;
+  --sb-detail-artwork: 42px;
+  --sb-inspector-width-min: 280px;
+  --sb-inspector-width-ideal: 340px;
+  --sb-inspector-width-max: 420px;
+
+  /* ---- Palette: light ---- */
+  --sb-canvas: #fbfaf8;
+  --sb-sidebar: #f4f3f1;
+  --sb-raised: #fefdfb;
+  --sb-grouped: #f0efec;
+  --sb-hover: #edece9;
+  --sb-selection: #e4e3df;
+  --sb-text-primary: #242529;
+  --sb-text-secondary: #686a70;
+  --sb-text-tertiary: #717378;
+  --sb-separator: #dad9d5;
+  --sb-disabled: #a5a6a4;
+  --sb-interaction: #5c5e63;
+  --sb-success: #2f7651;
+  --sb-warning: #9a5a12;
+  --sb-error: #ab4138;
+  --sb-diff-added: #eaf4ee;
+  --sb-diff-removed: #f7ecea;
+
+  /* Aliases: interaction is one warm-graphite role wearing four hats. */
+  --sb-focus: var(--sb-interaction);
+  --sb-link: var(--sb-interaction);
+  --sb-update: var(--sb-interaction);
+  /* Primary buttons are a neutral high-contrast fill, never a saturated brand blue. */
+  --sb-primary-fill: var(--sb-text-primary);
+  --sb-primary-fill-content: var(--sb-canvas);
+}
+
+/* ---- Palette: dark ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="hc-light"]) {
+    --sb-canvas: #222326;
+    --sb-sidebar: #292a2e;
+    --sb-raised: #313238;
+    --sb-grouped: #2b2c30;
+    --sb-hover: #34353a;
+    --sb-selection: #3c3d43;
+    --sb-text-primary: #e9e8e5;
+    --sb-text-secondary: #b7b6b2;
+    --sb-text-tertiary: #8f908e;
+    --sb-separator: #47484d;
+    --sb-disabled: #747579;
+    --sb-interaction: #bbbdb9;
+    --sb-success: #69b88b;
+    --sb-warning: #e2a052;
+    --sb-error: #e17a72;
+    --sb-diff-added: #26352d;
+    --sb-diff-removed: #382a2b;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --sb-canvas: #222326;
+  --sb-sidebar: #292a2e;
+  --sb-raised: #313238;
+  --sb-grouped: #2b2c30;
+  --sb-hover: #34353a;
+  --sb-selection: #3c3d43;
+  --sb-text-primary: #e9e8e5;
+  --sb-text-secondary: #b7b6b2;
+  --sb-text-tertiary: #8f908e;
+  --sb-separator: #47484d;
+  --sb-disabled: #747579;
+  --sb-interaction: #bbbdb9;
+  --sb-success: #69b88b;
+  --sb-warning: #e2a052;
+  --sb-error: #e17a72;
+  --sb-diff-added: #26352d;
+  --sb-diff-removed: #382a2b;
+}
+
+/* ---- Palette: Increase Contrast, light ---- */
+@media (prefers-contrast: more) {
+  :root:not([data-theme]) {
+    --sb-canvas: #fffefc;
+    --sb-sidebar: #efeeeb;
+    --sb-raised: #ffffff;
+    --sb-grouped: #eae9e5;
+    --sb-hover: #e5e4e0;
+    --sb-selection: #d8d7d2;
+    --sb-text-primary: #17181b;
+    --sb-text-secondary: #54565b;
+    --sb-text-tertiary: #64666b;
+    --sb-separator: #c7c6c1;
+    --sb-disabled: #8d8e8c;
+    --sb-interaction: #44464b;
+    --sb-success: #236440;
+    --sb-warning: #814704;
+    --sb-error: #922e28;
+    --sb-diff-added: #dceee3;
+    --sb-diff-removed: #f1deda;
+  }
+}
+
+/* ---- Palette: Increase Contrast, dark ---- */
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --sb-canvas: #191a1d;
+    --sb-sidebar: #242529;
+    --sb-raised: #37383e;
+    --sb-grouped: #313238;
+    --sb-hover: #3d3e44;
+    --sb-selection: #484a51;
+    --sb-text-primary: #f7f6f2;
+    --sb-text-secondary: #cdccc8;
+    --sb-text-tertiary: #a7a8a5;
+    --sb-separator: #5b5c62;
+    --sb-disabled: #8a8b90;
+    --sb-interaction: #d4d4cf;
+    --sb-success: #82cca2;
+    --sb-warning: #f2b66d;
+    --sb-error: #f0948d;
+    --sb-diff-added: #2d4437;
+    --sb-diff-removed: #4a3031;
+  }
+}
+
+:root[data-theme="hc-light"] {
+  color-scheme: light;
+  --sb-canvas: #fffefc;
+  --sb-sidebar: #efeeeb;
+  --sb-raised: #ffffff;
+  --sb-grouped: #eae9e5;
+  --sb-hover: #e5e4e0;
+  --sb-selection: #d8d7d2;
+  --sb-text-primary: #17181b;
+  --sb-text-secondary: #54565b;
+  --sb-text-tertiary: #64666b;
+  --sb-separator: #c7c6c1;
+  --sb-disabled: #8d8e8c;
+  --sb-interaction: #44464b;
+  --sb-success: #236440;
+  --sb-warning: #814704;
+  --sb-error: #922e28;
+  --sb-diff-added: #dceee3;
+  --sb-diff-removed: #f1deda;
+}
+
+:root[data-theme="hc-dark"] {
+  color-scheme: dark;
+  --sb-canvas: #191a1d;
+  --sb-sidebar: #242529;
+  --sb-raised: #37383e;
+  --sb-grouped: #313238;
+  --sb-hover: #3d3e44;
+  --sb-selection: #484a51;
+  --sb-text-primary: #f7f6f2;
+  --sb-text-secondary: #cdccc8;
+  --sb-text-tertiary: #a7a8a5;
+  --sb-separator: #5b5c62;
+  --sb-disabled: #8a8b90;
+  --sb-interaction: #d4d4cf;
+  --sb-success: #82cca2;
+  --sb-warning: #f2b66d;
+  --sb-error: #f0948d;
+  --sb-diff-added: #2d4437;
+  --sb-diff-removed: #4a3031;
+}
+
+/* Reduced Motion shortens transitions; it does not remove state changes. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sb-duration-feedback: 90ms;
+    --sb-duration-hover: 60ms;
+    --sb-duration-disclosure: 100ms;
+    --sb-duration-scroll-edge: 80ms;
+    --sb-duration-candidate-in: 100ms;
+    --sb-duration-candidate-out: 100ms;
+    --sb-duration-reveal-in: 100ms;
+    --sb-duration-reveal-out: 80ms;
+  }
+}
+
+/* ---- Bundled typefaces ---- */
+@font-face {
+  font-family: "Schibsted Grotesk";
+  src: url("fonts/SchibstedGrotesk%5Bwght%5D.ttf") format("truetype-variations");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Schibsted Grotesk";
+  src: url("fonts/SchibstedGrotesk-Italic%5Bwght%5D.ttf") format("truetype-variations");
+  font-weight: 400 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("fonts/CommitMono-400-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("fonts/CommitMono-400-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("fonts/CommitMono-700-Regular.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("fonts/CommitMono-700-Italic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Commit Mono ships programming ligatures; Spellbook keeps them off. */
+code,
+pre,
+kbd,
+samp,
+.sb-code {
+  font-family: var(--sb-font-code);
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}

@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spellbook Design Language</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* ------------------------------------------------------------------
+   This page is written in the language it documents: warm graphite
+   neutrals, Schibsted Grotesk, Commit Mono for anything code-like,
+   hierarchy from weight and spacing, hairline separators, no cards
+   inside cards, no decorative gradients.
+   ------------------------------------------------------------------ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--sb-canvas);
+  color: var(--sb-text-primary);
+  font-family: var(--sb-font-ui);
+  font-size: var(--sb-type-reader-body);
+  line-height: var(--sb-reader-line-height);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--sb-link); text-underline-offset: 2px; }
+a:hover { color: var(--sb-text-primary); }
+
+code, .mono { font-size: var(--sb-type-code-body); }
+code { color: var(--sb-text-primary); }
+
+/* ---- Shell: sidebar + reader, echoing the app's two-pane structure ---- */
+
+.shell { display: grid; grid-template-columns: var(--sb-sidebar-width-ideal) minmax(0, 1fr); }
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--sb-sidebar);
+  border-right: var(--sb-stroke) solid var(--sb-separator);
+  padding: var(--sb-space-20) var(--sb-space-12) var(--sb-space-32);
+}
+
+.sidebar-title {
+  font-size: var(--sb-type-section-title);
+  font-weight: var(--sb-weight-semibold);
+  padding: 0 var(--sb-space-6) var(--sb-space-4);
+  margin: 0;
+}
+
+.sidebar-sub {
+  font-size: var(--sb-type-metadata);
+  color: var(--sb-text-tertiary);
+  padding: 0 var(--sb-space-6);
+  margin: 0 0 var(--sb-space-16);
+}
+
+.nav { display: flex; flex-direction: column; gap: var(--sb-space-2); }
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--sb-space-8);
+  height: var(--sb-sidebar-row-compact);
+  padding: 0 var(--sb-space-6);
+  border-radius: var(--sb-radius-medium);
+  font-size: var(--sb-type-row-label);
+  color: var(--sb-text-secondary);
+  text-decoration: none;
+  transition: background-color var(--sb-duration-hover) var(--sb-ease-out),
+              color var(--sb-duration-hover) var(--sb-ease-out);
+}
+.nav a:hover { background: var(--sb-hover); color: var(--sb-text-primary); }
+.nav a.is-current { background: var(--sb-selection); color: var(--sb-text-primary); font-weight: var(--sb-weight-medium); }
+.nav a svg { color: var(--sb-text-tertiary); flex: none; }
+.nav a:hover svg, .nav a.is-current svg { color: var(--sb-text-secondary); }
+
+.nav-group {
+  font-size: var(--sb-type-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sb-text-tertiary);
+  padding: var(--sb-space-16) var(--sb-space-6) var(--sb-space-4);
+}
+
+.reader {
+  min-width: 0;
+  padding: var(--sb-space-48) var(--sb-reader-inset-comfortable) var(--sb-space-48);
+}
+.reader > * { max-width: var(--sb-reader-width-wide); }
+
+/* ---- Title bar: fixed height, plain, no material ---- */
+
+.titlebar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sb-space-16);
+  height: var(--sb-title-bar-height);
+  padding: 0 var(--sb-reader-inset-comfortable);
+  background: var(--sb-canvas);
+  border-bottom: var(--sb-stroke) solid var(--sb-separator);
+  font-size: var(--sb-type-metadata);
+  color: var(--sb-text-secondary);
+}
+
+.theme-switch { display: flex; align-items: center; gap: var(--sb-space-4); }
+.theme-switch span { color: var(--sb-text-tertiary); margin-right: var(--sb-space-4); }
+
+button.quiet {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--sb-interaction);
+  font: inherit;
+  font-size: var(--sb-type-metadata);
+  padding: var(--sb-space-4) var(--sb-space-8);
+  border-radius: var(--sb-radius-medium);
+  cursor: pointer;
+  transition: background-color var(--sb-duration-hover) var(--sb-ease-out);
+}
+button.quiet:hover { background: var(--sb-hover); }
+button.quiet:active { background: var(--sb-selection); }
+button.quiet[aria-pressed="true"] { background: var(--sb-selection); color: var(--sb-text-primary); font-weight: var(--sb-weight-medium); }
+button.quiet:focus-visible { outline: 2px solid var(--sb-focus); outline-offset: 1px; }
+
+/* ---- Reader rhythm ---- */
+
+h1 {
+  font-size: 34px;
+  font-weight: var(--sb-weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: var(--sb-space-8) 0 var(--sb-space-12);
+}
+
+h2 {
+  font-size: var(--sb-type-detail-title);
+  font-weight: var(--sb-weight-bold);
+  letter-spacing: -0.01em;
+  margin: var(--sb-space-48) 0 var(--sb-space-8);
+  scroll-margin-top: 56px;
+}
+
+h3 {
+  font-size: var(--sb-type-section-title);
+  font-weight: var(--sb-weight-semibold);
+  margin: var(--sb-space-32) 0 var(--sb-space-8);
+}
+
+h4 {
+  font-size: var(--sb-type-body);
+  font-weight: var(--sb-weight-semibold);
+  margin: var(--sb-space-24) 0 var(--sb-space-6);
+}
+
+p { margin: 0 0 var(--sb-space-12); max-width: 74ch; }
+ul, ol { margin: 0 0 var(--sb-space-12); padding-left: var(--sb-space-20); max-width: 74ch; }
+li { margin-bottom: var(--sb-space-4); }
+
+.lede { font-size: 17px; color: var(--sb-text-secondary); max-width: 68ch; }
+
+.rule { border: 0; border-top: var(--sb-stroke) solid var(--sb-separator); margin: var(--sb-space-32) 0; }
+
+.eyebrow {
+  font-size: var(--sb-type-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sb-text-tertiary);
+  margin-bottom: var(--sb-space-6);
+}
+
+.note {
+  border-left: 2px solid var(--sb-separator);
+  padding: var(--sb-space-2) 0 var(--sb-space-2) var(--sb-space-16);
+  color: var(--sb-text-secondary);
+  font-size: var(--sb-type-body);
+  margin: 0 0 var(--sb-space-16);
+  max-width: 74ch;
+}
+
+/* ---- Tables: inset grouped rows, not dashboard cards ---- */
+
+.table-wrap { overflow-x: auto; margin: 0 0 var(--sb-space-16); }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 520px;
+  font-size: var(--sb-type-body);
+}
+
+th {
+  text-align: left;
+  font-size: var(--sb-type-metadata);
+  font-weight: var(--sb-weight-semibold);
+  color: var(--sb-text-tertiary);
+  padding: 0 var(--sb-space-12) var(--sb-space-6) 0;
+  border-bottom: var(--sb-stroke) solid var(--sb-separator);
+  white-space: nowrap;
+}
+
+td {
+  padding: var(--sb-space-8) var(--sb-space-12) var(--sb-space-8) 0;
+  border-bottom: var(--sb-stroke-hairline) solid var(--sb-separator);
+  vertical-align: middle;
+}
+
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.dim { color: var(--sb-text-tertiary); }
+
+/* ---- Color ---- */
+
+.swatch {
+  width: var(--sb-space-32);
+  height: var(--sb-space-20);
+  border-radius: var(--sb-radius-small);
+  border: var(--sb-stroke) solid var(--sb-separator);
+  display: block;
+}
+
+.hex { font-family: var(--sb-font-code); font-size: var(--sb-type-code-metadata); color: var(--sb-text-secondary); }
+
+/* ---- Type specimens ---- */
+
+.specimen {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sb-space-16);
+  padding: var(--sb-space-8) 0;
+  border-bottom: var(--sb-stroke-hairline) solid var(--sb-separator);
+}
+.specimen .label {
+  flex: none;
+  width: 140px;
+  font-size: var(--sb-type-metadata);
+  color: var(--sb-text-tertiary);
+}
+.specimen .sample { min-width: 0; }
+
+/* ---- Scale strips ---- */
+
+.scale { display: flex; align-items: flex-end; gap: var(--sb-space-12); flex-wrap: wrap; margin-bottom: var(--sb-space-16); }
+.scale figure { margin: 0; text-align: center; }
+.scale .bar { background: var(--sb-interaction); border-radius: 2px; height: var(--sb-space-16); }
+.scale .box { border: var(--sb-stroke) solid var(--sb-text-secondary); background: var(--sb-grouped); }
+.scale figcaption { font-size: var(--sb-type-micro); color: var(--sb-text-tertiary); margin-top: var(--sb-space-4); font-variant-numeric: tabular-nums; }
+
+/* ---- Icons ---- */
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: var(--sb-space-2);
+  margin-bottom: var(--sb-space-16);
+}
+
+.icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sb-space-6);
+  padding: var(--sb-space-12) var(--sb-space-6);
+  border-radius: var(--sb-radius-medium);
+  transition: background-color var(--sb-duration-hover) var(--sb-ease-out);
+}
+.icon-cell:hover { background: var(--sb-hover); }
+.icon-cell svg { color: var(--sb-text-secondary); }
+.icon-cell:hover svg { color: var(--sb-text-primary); }
+.icon-cell .name {
+  font-family: var(--sb-font-code);
+  font-size: 10px;
+  color: var(--sb-text-tertiary);
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.3;
+}
+
+.icon-row { display: flex; align-items: flex-end; gap: var(--sb-space-24); flex-wrap: wrap; margin-bottom: var(--sb-space-16); }
+.icon-row figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sb-space-6); }
+.icon-row figcaption { font-size: var(--sb-type-micro); color: var(--sb-text-tertiary); font-variant-numeric: tabular-nums; }
+
+.agent-marks { display: flex; gap: var(--sb-space-24); flex-wrap: wrap; align-items: flex-end; margin-bottom: var(--sb-space-16); }
+.agent-marks figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sb-space-6); }
+.agent-marks img { width: var(--sb-agent-mark); height: var(--sb-agent-mark); display: block; }
+.agent-marks figcaption { font-size: var(--sb-type-micro); color: var(--sb-text-tertiary); }
+
+/* ---- Motion demo ---- */
+
+.motion-demo { display: flex; gap: var(--sb-space-16); flex-wrap: wrap; margin-bottom: var(--sb-space-16); }
+.motion-demo .row {
+  width: 220px;
+  padding: var(--sb-space-8) var(--sb-space-12);
+  border-radius: var(--sb-radius-medium);
+  background: var(--sb-grouped);
+  font-size: var(--sb-type-row-label);
+  cursor: default;
+}
+.motion-demo .row.hover-100 { transition: background-color var(--sb-duration-hover) var(--sb-ease-out); }
+.motion-demo .row.disclosure-180 { transition: background-color var(--sb-duration-disclosure) var(--sb-ease-out); }
+.motion-demo .row.instant { transition: none; }
+.motion-demo .row:hover { background: var(--sb-selection); }
+
+/* ---- Thumbnails ---- */
+
+.thumb-matrix { overflow-x: auto; margin-bottom: var(--sb-space-16); }
+
+.thumb-matrix table { min-width: 640px; border-collapse: separate; border-spacing: var(--sb-space-8); }
+.thumb-matrix th { border: 0; padding: 0 0 var(--sb-space-4); font-size: var(--sb-type-micro); }
+.thumb-matrix th.row-head {
+  text-align: right;
+  padding-right: var(--sb-space-8);
+  white-space: nowrap;
+  vertical-align: middle;
+  font-weight: var(--sb-weight-regular);
+  color: var(--sb-text-secondary);
+}
+.thumb-matrix td { border: 0; padding: 0; }
+
+canvas.thumb { display: block; border-radius: 0; }
+
+.playground {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sb-space-24);
+  align-items: start;
+  padding: var(--sb-space-20);
+  background: var(--sb-grouped);
+  border-radius: var(--sb-radius-large);
+  margin-bottom: var(--sb-space-16);
+}
+
+.field { display: flex; flex-direction: column; gap: var(--sb-space-4); margin-bottom: var(--sb-space-12); }
+.field label { font-size: var(--sb-type-metadata); color: var(--sb-text-secondary); }
+
+input[type="text"], select {
+  appearance: none;
+  font-family: var(--sb-font-code);
+  font-size: var(--sb-type-code-body);
+  color: var(--sb-text-primary);
+  background: var(--sb-raised);
+  border: var(--sb-stroke) solid var(--sb-separator);
+  border-radius: var(--sb-radius-medium);
+  padding: var(--sb-space-6) var(--sb-space-8);
+  width: 100%;
+}
+select { font-family: var(--sb-font-ui); font-size: var(--sb-type-control); }
+input[type="text"]:focus-visible, select:focus-visible { outline: 2px solid var(--sb-focus); outline-offset: 1px; border-color: transparent; }
+
+.resolved { font-family: var(--sb-font-code); font-size: var(--sb-type-code-metadata); color: var(--sb-text-secondary); }
+.resolved b { color: var(--sb-text-primary); font-weight: var(--sb-weight-regular); }
+
+.thumb-sizes { display: flex; align-items: flex-end; gap: var(--sb-space-16); }
+.thumb-sizes figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sb-space-6); }
+.thumb-sizes figcaption { font-size: var(--sb-type-micro); color: var(--sb-text-tertiary); font-variant-numeric: tabular-nums; }
+
+/* ---- Skill row sample ---- */
+
+.rowdemo { max-width: 300px; background: var(--sb-sidebar); border-radius: var(--sb-radius-large); padding: var(--sb-space-4) var(--sb-space-6); border: var(--sb-stroke) solid var(--sb-separator); }
+.rowdemo .skill-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sb-space-8);
+  height: var(--sb-sidebar-row-compact);
+  padding: 0 var(--sb-space-6);
+  border-radius: var(--sb-radius-medium);
+  font-size: var(--sb-type-row-label);
+  transition: background-color var(--sb-duration-hover) var(--sb-ease-out);
+}
+.rowdemo .skill-row:hover { background: var(--sb-hover); }
+.rowdemo .skill-row.is-selected { background: var(--sb-selection); }
+.rowdemo .skill-row canvas { flex: none; border-radius: 3px; }
+.rowdemo .skill-row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rowdemo .skill-row .status { flex: none; display: flex; }
+
+/* ---- Code ---- */
+
+pre {
+  background: var(--sb-grouped);
+  border-radius: var(--sb-radius-large);
+  padding: var(--sb-space-12) var(--sb-space-16);
+  overflow-x: auto;
+  font-size: var(--sb-type-code-body);
+  line-height: 1.5;
+  margin: 0 0 var(--sb-space-16);
+  max-width: var(--sb-reader-width-focused);
+}
+pre code { font-size: inherit; }
+
+.file-list { font-family: var(--sb-font-code); font-size: var(--sb-type-code-body); color: var(--sb-text-secondary); }
+
+/* ---- Prohibitions ---- */
+
+.prohibit { list-style: none; padding: 0; }
+.prohibit li {
+  display: flex;
+  gap: var(--sb-space-8);
+  align-items: baseline;
+  padding: var(--sb-space-6) 0;
+  border-bottom: var(--sb-stroke-hairline) solid var(--sb-separator);
+}
+.prohibit li::before { content: "—"; color: var(--sb-text-tertiary); flex: none; }
+
+/* ---- Responsive ---- */
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: 0; border-bottom: var(--sb-stroke) solid var(--sb-separator); }
+  .nav { flex-direction: row; flex-wrap: wrap; }
+  .nav a { height: auto; padding: var(--sb-space-6) var(--sb-space-8); }
+  .nav-group { display: none; }
+  .reader { padding: var(--sb-space-24) var(--sb-space-16) var(--sb-space-48); }
+  .titlebar { padding: 0 var(--sb-space-16); }
+  .playground { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-archive" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M7 6L17 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 9L17 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 17H15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12H2.6C2.26863 12 2 12.2686 2 12.6V21.4C2 21.7314 2.26863 22 2.6 22H21.4C21.7314 22 22 21.7314 22 21.4V12.6C22 12.2686 21.7314 12 21.4 12H21M3 12V2.6C3 2.26863 3.26863 2 3.6 2H20.4C20.7314 2 21 2.26863 21 2.6V12M3 12H21" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-badge-check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.5213 2.62368C11.3147 1.75255 12.6853 1.75255 13.4787 2.62368L14.4989 3.74391C14.8998 4.18418 15.4761 4.42288 16.071 4.39508L17.5845 4.32435C18.7614 4.26934 19.7307 5.23857 19.6757 6.41554L19.6049 7.92905C19.5771 8.52388 19.8158 9.10016 20.2561 9.50111L21.3763 10.5213C22.2475 11.3147 22.2475 12.6853 21.3763 13.4787L20.2561 14.4989C19.8158 14.8998 19.5771 15.4761 19.6049 16.071L19.6757 17.5845C19.7307 18.7614 18.7614 19.7307 17.5845 19.6757L16.071 19.6049C15.4761 19.5771 14.8998 19.8158 14.4989 20.2561L13.4787 21.3763C12.6853 22.2475 11.3147 22.2475 10.5213 21.3763L9.50111 20.2561C9.10016 19.8158 8.52388 19.5771 7.92905 19.6049L6.41553 19.6757C5.23857 19.7307 4.26934 18.7614 4.32435 17.5845L4.39508 16.071C4.42288 15.4761 4.18418 14.8998 3.74391 14.4989L2.62368 13.4787C1.75255 12.6853 1.75255 11.3147 2.62368 10.5213L3.74391 9.50111C4.18418 9.10016 4.42288 8.52388 4.39508 7.92905L4.32435 6.41553C4.26934 5.23857 5.23857 4.26934 6.41554 4.32435L7.92905 4.39508C8.52388 4.42288 9.10016 4.18418 9.50111 3.74391L10.5213 2.62368Z" stroke="currentColor" stroke-width="2"/><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-book-stack" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 19.5V5C5 3.89543 5.89543 3 7 3H18.4C18.7314 3 19 3.26863 19 3.6V21" stroke="currentColor"  stroke-linecap="round"/><path d="M9 7L15 7" stroke="currentColor"  stroke-linecap="round"/><path d="M6.5 15L19 15" stroke="currentColor"  stroke-linecap="round"/><path d="M6.5 18L19 18" stroke="currentColor"  stroke-linecap="round"/><path d="M6.5 21L19 21" stroke="currentColor"  stroke-linecap="round"/><path d="M6.5 18C5.5 18 5 17.3284 5 16.5C5 15.6716 5.5 15 6.5 15" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 21C5.5 21 5 20.3284 5 19.5C5 18.6716 5.5 18 6.5 18" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19V5C4 3.89543 4.89543 3 6 3H19.4C19.7314 3 20 3.26863 20 3.6V16.7143" stroke="currentColor"  stroke-linecap="round"/><path d="M6 17L20 17" stroke="currentColor"  stroke-linecap="round"/><path d="M6 21L20 21" stroke="currentColor"  stroke-linecap="round"/><path d="M6 21C4.89543 21 4 20.1046 4 19C4 17.8954 4.89543 17 6 17" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7L15 7" stroke="currentColor"  stroke-linecap="round"/></symbol>
+<symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M7 12.5L10 15.5L17 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-check-square-solid" viewBox="0 0 24 24" fill="none" ><path fill-rule="evenodd" clip-rule="evenodd" d="M3.6 2.25C2.85442 2.25 2.25 2.85441 2.25 3.6V20.4C2.25 21.1456 2.85441 21.75 3.6 21.75H20.4C21.1456 21.75 21.75 21.1456 21.75 20.4V3.6C21.75 2.85442 21.1456 2.25 20.4 2.25H3.6ZM17.5303 9.03033C17.8232 8.73744 17.8232 8.26256 17.5303 7.96967C17.2374 7.67678 16.7626 7.67678 16.4697 7.96967L10 14.4393L7.53033 11.9697C7.23744 11.6768 6.76256 11.6768 6.46967 11.9697C6.17678 12.2626 6.17678 12.7374 6.46967 13.0303L9.46967 16.0303C9.76256 16.3232 10.2374 16.3232 10.5303 16.0303L17.5303 9.03033Z" fill="currentColor"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 13L9 17L19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-combine" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 9.6V20.4C21 20.7314 20.7314 21 20.4 21H9.6C9.26863 21 9 20.7314 9 20.4V9.6C9 9.26863 9.26863 9 9.6 9H20.4C20.7314 9 21 9.26863 21 9.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 3.6V14.4C15 14.7314 14.7314 15 14.4 15H3.6C3.26863 15 3 14.7314 3 14.4V3.6C3 3.26863 3.26863 3 3.6 3H14.4C14.7314 3 15 3.26863 15 3.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19.4 20H9.6C9.26863 20 9 19.7314 9 19.4V9.6C9 9.26863 9.26863 9 9.6 9H19.4C19.7314 9 20 9.26863 20 9.6V19.4C20 19.7314 19.7314 20 19.4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 9V4.6C15 4.26863 14.7314 4 14.4 4H4.6C4.26863 4 4 4.26863 4 4.6V14.4C4 14.7314 4.26863 15 4.6 15H9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 15.4V8.6C8 8.26863 8.26863 8 8.6 8H15.4C15.7314 8 16 8.26863 16 8.6V15.4C16 15.7314 15.7314 16 15.4 16H8.6C8.26863 16 8 15.7314 8 15.4Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4.6V19.4C20 19.7314 19.7314 20 19.4 20H4.6C4.26863 20 4 19.7314 4 19.4V4.6C4 4.26863 4.26863 4 4.6 4H19.4C19.7314 4 20 4.26863 20 4.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 4V2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 4V2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 4V2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 20V22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 20V22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 20V22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 17H22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12H22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 7H22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17H2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 12H2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 7H2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-download-circle" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 17L15 17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6V13M12 13L15.5 9.5M12 13L8.5 9.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-edit-pencil" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14.3632 5.65156L15.8431 4.17157C16.6242 3.39052 17.8905 3.39052 18.6716 4.17157L20.0858 5.58579C20.8668 6.36683 20.8668 7.63316 20.0858 8.41421L18.6058 9.8942M14.3632 5.65156L4.74749 15.2672C4.41542 15.5993 4.21079 16.0376 4.16947 16.5054L3.92738 19.2459C3.87261 19.8659 4.39148 20.3848 5.0115 20.33L7.75191 20.0879C8.21972 20.0466 8.65806 19.8419 8.99013 19.5099L18.6058 9.8942M14.3632 5.65156L18.6058 9.8942" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-filter-list" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6H21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12L17 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 18L13 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-folder-plus" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6H20M22 6H20M20 6V4M20 6V8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.4 20H2.6C2.26863 20 2 19.7314 2 19.4V11H21.4C21.7314 11 22 11.2686 22 11.6V19.4C22 19.7314 21.7314 20 21.4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11V4.6C2 4.26863 2.26863 4 2.6 4H8.77805C8.92127 4 9.05977 4.05124 9.16852 4.14445L12.3315 6.85555C12.4402 6.94876 12.5787 7 12.722 7H14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 11V4.6C2 4.26863 2.26863 4 2.6 4H8.77805C8.92127 4 9.05977 4.05124 9.16852 4.14445L12.3315 6.85555C12.4402 6.94876 12.5787 7 12.722 7H21.4C21.7314 7 22 7.26863 22 7.6V11M2 11V19.4C2 19.7314 2.26863 20 2.6 20H21.4C21.7314 20 22 19.7314 22 19.4V11M2 11H22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-help-circle" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9C9 5.49997 14.5 5.5 14.5 9C14.5 11.5 12 10.9999 12 13.9999" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 18.01L12.01 17.9989" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-horizontal-split" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10 12H2M2 12L5.5 8.5M2 12L5.5 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 12H22M22 12L18.5 8.5M22 12L18.5 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 21L10 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 21L14 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-link-slash" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M7.14286 16.9953C6.75006 16.9953 6.36756 16.9525 6 16.8715C3.70973 16.3665 2 14.3761 2 11.9977C2 9.284 4.22573 7.07548 7 7.00195" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3184 9.63429C12.7858 8.73635 11.9737 7.96977 11 7.4989" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.8571 6.99999C17.2499 6.99999 17.6324 7.04278 18 7.12383C20.2903 7.62884 22 9.6192 22 11.9976C22 14.7577 19.6975 16.9952 16.8571 16.9952C16.581 16.9952 15.4776 16.9952 15.1429 16.9952C12.317 16.9952 10 14.4893 10 11.9976C10 11.9976 10 11 10.5 10.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3L21 21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 11.9976C14 9.5059 11.683 7 8.85714 7C8.52241 7 7.41904 7.00001 7.14286 7.00001C4.30254 7.00001 2 9.23752 2 11.9976C2 14.376 3.70973 16.3664 6 16.8714C6.36756 16.9525 6.75006 16.9952 7.14286 16.9952" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11.9976C10 14.4893 12.317 16.9952 15.1429 16.9952C15.4776 16.9952 16.581 16.9952 16.8571 16.9952C19.6975 16.9952 22 14.7577 22 11.9976C22 9.6192 20.2903 7.62884 18 7.12383C17.6324 7.04278 17.2499 6.99999 16.8571 6.99999" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-media-image-xmark" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 16L10 13L14 14.8182" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M16 10C14.8954 10 14 9.10457 14 8C14 6.89543 14.8954 6 16 6C17.1046 6 18 6.89543 18 8C18 9.10457 17.1046 10 16 10Z" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M16.8786 21.1213L19 19M21.1213 16.8787L19 19M19 19L16.8786 16.8787M19 19L21.1213 21.1213" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M13 21H3.6C3.26863 21 3 20.7314 3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6V13" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-media-image" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6Z" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16L10 13L21 18" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M16 10C14.8954 10 14 9.10457 14 8C14 6.89543 14.8954 6 16 6C17.1046 6 18 6.89543 18 8C18 9.10457 17.1046 10 16 10Z" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-minus-circle" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 12H16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-more-horiz" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 12.5C20.2761 12.5 20.5 12.2761 20.5 12C20.5 11.7239 20.2761 11.5 20 11.5C19.7239 11.5 19.5 11.7239 19.5 12C19.5 12.2761 19.7239 12.5 20 12.5Z" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12.5C12.2761 12.5 12.5 12.2761 12.5 12C12.5 11.7239 12.2761 11.5 12 11.5C11.7239 11.5 11.5 11.7239 11.5 12C11.5 12.2761 11.7239 12.5 12 12.5Z" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 12.5C4.27614 12.5 4.5 12.2761 4.5 12C4.5 11.7239 4.27614 11.5 4 11.5C3.72386 11.5 3.5 11.7239 3.5 12C3.5 12.2761 3.72386 12.5 4 12.5Z" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-nav-arrow-right" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-network" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="2" width="7" height="5" rx="0.6" stroke="currentColor" stroke-width="2"/><rect x="8.5" y="17" width="7" height="5" rx="0.6" stroke="currentColor" stroke-width="2"/><rect x="14" y="2" width="7" height="5" rx="0.6" stroke="currentColor" stroke-width="2"/><path d="M6.5 7V10.5C6.5 11.6046 7.39543 12.5 8.5 12.5H15.5C16.6046 12.5 17.5 11.6046 17.5 10.5V7" stroke="currentColor" stroke-width="2"/><path d="M12 12.5V17" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-package" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 5.99999L20 18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6C4 4.89543 4.89543 4 6 4H18C19.1045 4 19.9999 4.89543 20 5.99999Z" stroke="currentColor"   stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9V4" stroke="currentColor"   stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-page" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 21.4V2.6C4 2.26863 4.26863 2 4.6 2H16.2515C16.4106 2 16.5632 2.06321 16.6757 2.17574L19.8243 5.32426C19.9368 5.43679 20 5.5894 20 5.74853V21.4C20 21.7314 19.7314 22 19.4 22H4.6C4.26863 22 4 21.7314 4 21.4Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10L16 10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 18L16 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 14L12 14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 2V5.4C16 5.73137 16.2686 6 16.6 6H20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20.5096 9.54C20.4243 9.77932 20.2918 9.99909 20.12 10.1863C19.9483 10.3735 19.7407 10.5244 19.5096 10.63C18.2796 11.1806 17.2346 12.0745 16.5002 13.2045C15.7659 14.3345 15.3733 15.6524 15.3696 17C15.3711 17.4701 15.418 17.9389 15.5096 18.4C15.5707 18.6818 15.5747 18.973 15.5215 19.2564C15.4682 19.5397 15.3588 19.8096 15.1996 20.05C15.0649 20.2604 14.8877 20.4403 14.6793 20.5781C14.4709 20.7158 14.2359 20.8085 13.9896 20.85C13.4554 20.9504 12.9131 21.0006 12.3696 21C11.1638 21.0006 9.97011 20.7588 8.85952 20.2891C7.74893 19.8194 6.74405 19.1314 5.90455 18.2657C5.06506 17.4001 4.40807 16.3747 3.97261 15.2502C3.53714 14.1257 3.33208 12.9252 3.36959 11.72C3.4472 9.47279 4.3586 7.33495 5.92622 5.72296C7.49385 4.11097 9.60542 3.14028 11.8496 3H12.3596C14.0353 3.00042 15.6777 3.46869 17.1017 4.35207C18.5257 5.23544 19.6748 6.49885 20.4196 8C20.6488 8.47498 20.6812 9.02129 20.5096 9.52V9.54Z" stroke="currentColor" stroke-width="2"/><path d="M8 16.01L8.01 15.9989" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12.01L6.01 11.9989" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 8.01L8.01 7.99889" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6.01L12.01 5.99889" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8.01L16.01 7.99889" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10 12H5C4.44772 12 4 11.5523 4 11V7.5C4 6.94772 4.44772 6.5 5 6.5H9C9.55228 6.5 10 6.94772 10 7.5V12ZM10 12C10 14.5 9 16 6 17.5" stroke="currentColor"   stroke-linecap="round"/><path d="M20 12H15C14.4477 12 14 11.5523 14 11V7.5C14 6.94772 14.4477 6.5 15 6.5H19C19.5523 6.5 20 6.94772 20 7.5V12ZM20 12C20 14.5 19 16 16 17.5" stroke="currentColor"   stroke-linecap="round"/></symbol>
+<symbol id="i-refresh-double" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21.1679 8C19.6247 4.46819 16.1006 2 11.9999 2C6.81459 2 2.55104 5.94668 2.04932 11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.88146 16C4.42458 19.5318 7.94874 22 12.0494 22C17.2347 22 21.4983 18.0533 22 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.04932 16H2.64932C2.31795 16 2.04932 16.2686 2.04932 16.6V21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 17L21 21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11C3 15.4183 6.58172 19 11 19C13.213 19 15.2161 18.1015 16.6644 16.6493C18.1077 15.2022 19 13.2053 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-server-connection" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 19H12M21 19H12M12 19V13M12 13H18V5H6V13H12Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9.01L9.01 8.99889" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9.01L12.01 8.99889" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.6224 10.3954L18.5247 7.7448L20 6L18 4L16.2647 5.48295L13.5578 4.36974L12.9353 2H10.981L10.3491 4.40113L7.70441 5.51596L6 4L4 6L5.45337 7.78885L4.3725 10.4463L2 11V13L4.40111 13.6555L5.51575 16.2997L4 18L6 20L7.79116 18.5403L10.397 19.6123L11 22H13L13.6045 19.6132L16.2551 18.5155C16.6969 18.8313 18 20 18 20L20 18L18.5159 16.2494L19.6139 13.598L21.9999 12.9772L22 11L19.6224 10.3954Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-sidebar-collapse" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21L5 21C3.89543 21 3 20.1046 3 19L3 5C3 3.89543 3.89543 3 5 3L19 3C20.1046 3 21 3.89543 21 5L21 19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M7.25 10L5.5 12L7.25 14" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 21V3" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-sidebar-expand" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21L5 21C3.89543 21 3 20.1046 3 19L3 5C3 3.89543 3.89543 3 5 3L19 3C20.1046 3 21 3.89543 21 5L21 19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 21V3" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10L7.25 12L5.5 14" stroke="currentColor"  stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-square" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-submit-document" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 13V5.74853C20 5.5894 19.9368 5.43679 19.8243 5.32426L16.6757 2.17574C16.5632 2.06321 16.4106 2 16.2515 2H4.6C4.26863 2 4 2.26863 4 2.6V21.4C4 21.7314 4.26863 22 4.6 22H14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 2V5.4C16 5.73137 16.2686 6 16.6 6H20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 19H22M22 19L19 16M22 19L19 22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-tools" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.0503 10.6066L2.97923 17.6777C2.19818 18.4587 2.19818 19.7251 2.97923 20.5061V20.5061C3.76027 21.2872 5.0266 21.2872 5.80765 20.5061L12.8787 13.4351" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.1927 13.7994L21.071 17.6777C21.8521 18.4587 21.8521 19.7251 21.071 20.5061V20.5061C20.29 21.2872 19.0236 21.2872 18.2426 20.5061L12.0341 14.2977" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.73267 5.90381L4.61135 6.61092L2.49003 3.07539L3.90424 1.66117L7.43978 3.78249L6.73267 5.90381ZM6.73267 5.90381L9.5629 8.73404" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.0503 10.6066C9.2065 8.45359 9.37147 5.62861 11.111 3.8891C12.8505 2.14958 16.0607 1.76778 17.8285 2.82844L14.7878 5.86911L14.5052 8.98015L17.6162 8.69754L20.6569 5.65686C21.7176 7.42463 21.3358 10.6349 19.5963 12.3744C17.8567 14.1139 15.0318 14.2789 12.8788 13.435" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 9L18.005 20.3463C17.8369 21.3026 17.0062 22 16.0353 22H7.96474C6.99379 22 6.1631 21.3026 5.99496 20.3463L4 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 6L15.375 6M3 6L8.625 6M8.625 6V4C8.625 2.89543 9.52043 2 10.625 2H13.375C14.4796 2 15.375 2.89543 15.375 4V6M8.625 6L15.375 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4.5 8C8.5 8 11 8 15 8C15 8 15 8 15 8C15 8 20 8 20 12.7059C20 18 15 18 15 18C11.5714 18 9.71429 18 6.28571 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 11.5C6.13317 10.1332 5.36683 9.36683 4 8C5.36683 6.63317 6.13317 5.86683 7.5 4.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 20L18 20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16V4M12 4L15.5 7.5M12 4L8.5 7.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-view-columns-3" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 3H3.6C3.26863 3 3 3.26863 3 3.6V20.4C3 20.7314 3.26863 21 3.6 21H9M9 3V21M9 3H15M9 21H15M15 3H20.4C20.7314 3 21 3.26863 21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H15M15 3V21" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-warning-circle" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 7L12 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 17.01L12.01 16.9989" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-warning-triangle" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20.0429 21H3.95705C2.41902 21 1.45658 19.3364 2.22324 18.0031L10.2662 4.01533C11.0352 2.67792 12.9648 2.67791 13.7338 4.01532L21.7768 18.0031C22.5434 19.3364 21.581 21 20.0429 21Z" stroke="currentColor" stroke-linecap="round"/><path d="M12 9V13" stroke="currentColor" stroke-linecap="round"/><path d="M12 17.01L12.01 16.9989" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-xmark-circle-solid" viewBox="0 0 24 24" fill="none" ><path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C6.06294 1.25 1.25 6.06294 1.25 12C1.25 17.9371 6.06294 22.75 12 22.75C17.9371 22.75 22.75 17.9371 22.75 12C22.75 6.06294 17.9371 1.25 12 1.25ZM9.70164 8.64124C9.40875 8.34835 8.93388 8.34835 8.64098 8.64124C8.34809 8.93414 8.34809 9.40901 8.64098 9.7019L10.9391 12L8.64098 14.2981C8.34809 14.591 8.34809 15.0659 8.64098 15.3588C8.93388 15.6517 9.40875 15.6517 9.70164 15.3588L11.9997 13.0607L14.2978 15.3588C14.5907 15.6517 15.0656 15.6517 15.3585 15.3588C15.6514 15.0659 15.6514 14.591 15.3585 14.2981L13.0604 12L15.3585 9.7019C15.6514 9.40901 15.6514 8.93414 15.3585 8.64124C15.0656 8.34835 14.5907 8.34835 14.2978 8.64124L11.9997 10.9393L9.70164 8.64124Z" fill="currentColor"/></symbol>
+</defs></svg>
+
+<div class="shell">
+
+  <nav class="sidebar" aria-label="Sections">
+    <h2 class="sidebar-title">Spellbook</h2>
+    <p class="sidebar-sub">Design language &amp; generative thumbnails</p>
+
+    <div class="nav">
+      <a href="#overview"><svg width="14" height="14" aria-hidden="true"><use href="#i-book"/></svg>Overview</a>
+
+      <div class="nav-group">Foundations</div>
+      <a href="#direction"><svg width="14" height="14" aria-hidden="true"><use href="#i-palette"/></svg>Direction</a>
+      <a href="#color"><svg width="14" height="14" aria-hidden="true"><use href="#i-media-image"/></svg>Color</a>
+      <a href="#typography"><svg width="14" height="14" aria-hidden="true"><use href="#i-page"/></svg>Typography</a>
+      <a href="#space"><svg width="14" height="14" aria-hidden="true"><use href="#i-view-columns-3"/></svg>Space &amp; shape</a>
+      <a href="#icons"><svg width="14" height="14" aria-hidden="true"><use href="#i-tools"/></svg>Icons</a>
+      <a href="#motion"><svg width="14" height="14" aria-hidden="true"><use href="#i-refresh"/></svg>Motion</a>
+
+      <div class="nav-group">Artwork</div>
+      <a href="#thumbnails"><svg width="14" height="14" aria-hidden="true"><use href="#i-package"/></svg>Generative thumbnails</a>
+      <a href="#matrix"><svg width="14" height="14" aria-hidden="true"><use href="#i-combine"/></svg>The 35 combinations</a>
+      <a href="#playground"><svg width="14" height="14" aria-hidden="true"><use href="#i-cpu"/></svg>Try it</a>
+      <a href="#resolution"><svg width="14" height="14" aria-hidden="true"><use href="#i-filter-list"/></svg>Resolution ladder</a>
+
+      <div class="nav-group">Practice</div>
+      <a href="#prohibitions"><svg width="14" height="14" aria-hidden="true"><use href="#i-minus-circle"/></svg>Prohibitions</a>
+      <a href="#carried"><svg width="14" height="14" aria-hidden="true"><use href="#i-warning-circle"/></svg>Carried over</a>
+      <a href="#using"><svg width="14" height="14" aria-hidden="true"><use href="#i-copy"/></svg>Using these files</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="titlebar">
+      <span>Design</span>
+      <div class="theme-switch" role="group" aria-label="Preview appearance">
+        <span>Appearance</span>
+        <button class="quiet" data-theme-set="" aria-pressed="true">System</button>
+        <button class="quiet" data-theme-set="light" aria-pressed="false">Light</button>
+        <button class="quiet" data-theme-set="dark" aria-pressed="false">Dark</button>
+        <button class="quiet" data-theme-set="hc-light" aria-pressed="false">HC light</button>
+        <button class="quiet" data-theme-set="hc-dark" aria-pressed="false">HC dark</button>
+      </div>
+    </div>
+
+    <div class="reader">
+
+      <p class="eyebrow" id="overview">Spellbook</p>
+      <h1>Design language &amp; generative thumbnails</h1>
+      <p class="lede">
+        Everything the macOS app got right about how Spellbook should look, kept and translated
+        to the web — and the generative thumbnail system, rewritten as working browser code so it
+        keeps producing the same images it always did.
+      </p>
+
+      <hr class="rule">
+
+      <h3>What this repository holds now</h3>
+      <p>
+        The SwiftUI application has been removed. Spellbook's next form is a temporary interface
+        that runs in the browser, opened by the agent from a skill and shaped by whatever codebase
+        it is looking at. That interface does not exist yet. What survives the reset is the part
+        worth keeping: the visual system, and the artwork generator.
+      </p>
+
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>What it is</th></tr></thead>
+        <tbody>
+          <tr><td class="file-list">design/index.html</td><td>This page. The documentation and the live reference.</td></tr>
+          <tr><td class="file-list">design/tokens.css</td><td>Every design constant as a CSS custom property, in four palettes.</td></tr>
+          <tr><td class="file-list">design/thumbnails.js</td><td>The generative thumbnail renderer, dependency-free.</td></tr>
+          <tr><td class="file-list">design/fonts/</td><td>Schibsted Grotesk and Commit Mono, with their OFL licenses.</td></tr>
+          <tr><td class="file-list">design/icons/</td><td>46 Iconoir glyphs, 4 agent marks, and their provenance records.</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p class="note">
+        Values are quoted in points as the macOS app defined them, mapped 1:1 to CSS pixels.
+        Anything that described the native window shell rather than the visual language is
+        collected under <a href="#carried">Carried over</a> rather than silently restated as
+        a web rule.
+      </p>
+
+      <h2 id="direction">Direction</h2>
+      <p>
+        A restrained product language for someone moving quickly between coding agents, then
+        slowing down to read one skill carefully. Two modes, one surface: scan and read.
+      </p>
+      <ul>
+        <li><b>ASIDE</b> — dense lists, compact rows, thin dividers, quiet hierarchy.</li>
+        <li><b>v0</b> — direct controls, minimal chrome, an interface that gets out of the way.</li>
+        <li><b>Codex</b> — calm technical content, disciplined typography, source-aware workflows.</li>
+      </ul>
+      <p>
+        Hierarchy comes from weight, spacing, and a short scale — not from boxes, fills, or color.
+        Color is app-owned and restrained; the only things allowed to be loud are skill thumbnails
+        and official agent logos, which keep their own color entirely.
+      </p>
+
+      <h2 id="color">Color</h2>
+      <p>
+        Four resolved palettes: light, dark, and an Increase Contrast pair. Every role below is a
+        live CSS variable — switch the appearance in the title bar and the swatches follow. The
+        OKLCH values in the original spec remain the design targets; the sRGB seeds are what ships.
+      </p>
+
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th><th>Live</th><th>Token</th>
+            <th>Light</th><th>Dark</th><th>HC light</th><th>HC dark</th><th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody id="palette-rows"></tbody>
+      </table>
+      </div>
+
+      <h4>Rules that outlive the palette</h4>
+      <ul>
+        <li>Interaction, focus, link, and update are <b>one warm graphite role</b>. Saturated blue is not an interaction color.</li>
+        <li>Primary buttons use a high-contrast neutral fill with canvas-colored content, never a brand fill.</li>
+        <li>Selection is a neutral tint. It never carries brand hue.</li>
+        <li>Status color appears in exactly three places: the single actionable indicator, destructive confirmations, and diff semantics.</li>
+        <li>Thumbnails and agent marks are identity artwork. They are never tinted, dimmed, or recolored to match the palette.</li>
+      </ul>
+
+      <h2 id="typography">Typography</h2>
+      <p>
+        Schibsted Grotesk for everything the interface says. Commit Mono for everything the machine
+        says — paths, revisions, hashes, diffs, aligned tables, editor text — with programming
+        ligatures switched off.
+      </p>
+
+      <div id="specimens"></div>
+
+      <p class="note">
+        Reader prose sits at 15 px with a 1.5–1.6 line height and a 68–74 character measure.
+        Display typography is not used inside the app shell.
+      </p>
+
+      <h2 id="space">Space &amp; shape</h2>
+
+      <h3>Space</h3>
+      <p>Ten steps. Whitespace separates conceptual groups; it is not a decorative resource.</p>
+      <div class="scale" id="space-scale"></div>
+
+      <h3>Radius</h3>
+      <p>Five steps, plus capsule at the call site where a control genuinely calls for it.</p>
+      <div class="scale" id="radius-scale"></div>
+
+      <h3>Stroke</h3>
+      <p>
+        Hairline at 0.5 px and 1 px. Dividers are one physical pixel wherever the display permits.
+        Boundaries are drawn with a separator line, not with a card.
+      </p>
+
+      <h3>Density</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Element</th><th class="num">Compact</th><th class="num">Comfortable</th></tr></thead>
+        <tbody>
+          <tr><td>Sidebar row</td><td class="num">31 px</td><td class="num">39 px</td></tr>
+          <tr><td>Settings row</td><td class="num">44 px</td><td class="num">52 px</td></tr>
+          <tr><td>Reader inset</td><td class="num">30 px</td><td class="num">36 px</td></tr>
+          <tr><td>Reader measure</td><td class="num">760 px focused</td><td class="num">980 px wide</td></tr>
+          <tr><td>Sidebar width</td><td class="num" colspan="2">240 / 260 / 300 px min, ideal, max</td></tr>
+          <tr><td>Inspector width</td><td class="num" colspan="2">280 / 340 / 420 px min, ideal, max</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Compact is the default. The two densities change row heights and insets only — never content.</p>
+
+      <h2 id="icons">Icons</h2>
+      <p>
+        One semantic vocabulary, vendored from Iconoir at revision
+        <code>10a66d02</code>. Regular artwork keeps its 24×24 geometry, caps, and joins, with
+        stroke width normalized from 1.5 to 2.0. Solid artwork is reserved for explicit binary
+        states — a completed task, a clear affordance.
+      </p>
+
+      <h3>Sizes</h3>
+      <p>Five physical sizes, mapped to four usage recipes so dense chrome stays smaller than content imagery.</p>
+      <div class="icon-row" id="icon-sizes"></div>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Usage</th><th class="num">Size</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Dense chrome</td><td class="num">10 px</td><td>Sidebar and title-bar controls</td></tr>
+          <tr><td>Standard control</td><td class="num">14 px</td><td>Ordinary compact controls</td></tr>
+          <tr><td>Content</td><td class="num">16 px</td><td>Icons that sit with content</td></tr>
+          <tr><td>Emphasis</td><td class="num">20 px</td><td>Deliberately emphasized icons</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>Color roles</h3>
+      <p>Icon color is semantic. Call sites choose a role, never an ad-hoc color.</p>
+      <div class="icon-row" id="icon-roles"></div>
+
+      <h3>The vocabulary</h3>
+      <p>46 glyphs. If a concept is not here, it does not get an icon.</p>
+      <div class="icon-grid" id="icon-grid"></div>
+
+      <h3>Agent marks</h3>
+      <p>
+        Official distribution or brand-kit tiles at 22 px, in original color, with no tint,
+        cropping, effect, or added background. These are identity, not interface.
+      </p>
+      <div class="agent-marks">
+        <figure><img src="icons/agents/claude-code.png" alt="Claude Code"><figcaption>Claude Code</figcaption></figure>
+        <figure><img src="icons/agents/codex.png" alt="Codex"><figcaption>Codex</figcaption></figure>
+        <figure><img src="icons/agents/cursor-light.png" alt="Cursor, light"><figcaption>Cursor light</figcaption></figure>
+        <figure><img src="icons/agents/cursor-dark.png" alt="Cursor, dark"><figcaption>Cursor dark</figcaption></figure>
+      </div>
+      <p class="note">
+        Provenance, source versions, trademark notes, and SHA-256 digests are recorded in
+        <span class="file-list">design/icons/AGENT-ASSETS.md</span>,
+        <span class="file-list">ICONOIR-ASSETS.tsv</span>, and
+        <span class="file-list">icon-assets.sha256</span>.
+      </p>
+
+      <h2 id="motion">Motion</h2>
+      <p>
+        Short, ease-out, and almost always about state rather than delight. The strong curve is
+        <code>cubic-bezier(0.23, 1, 0.32, 1)</code>. Reduced Motion shortens durations; it never
+        removes the state change.
+      </p>
+
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>What</th><th class="num">Duration</th><th class="num">Reduced</th><th>Curve</th></tr></thead>
+        <tbody>
+          <tr><td>Pointer hover</td><td class="num">100 ms</td><td class="num">60 ms</td><td>Strong ease-out</td></tr>
+          <tr><td>Package disclosure</td><td class="num">180 ms</td><td class="num">100 ms</td><td>Strong ease-out</td></tr>
+          <tr><td>Scroll-edge veil</td><td class="num">120 ms</td><td class="num">80 ms</td><td>Strong ease-out</td></tr>
+          <tr><td>Action feedback</td><td class="num">160 ms</td><td class="num">90 ms</td><td>Ease-out</td></tr>
+          <tr><td>Source candidate in / out</td><td class="num">180 / 140 ms</td><td class="num">100 ms</td><td>Ease-out</td></tr>
+          <tr><td>First library reveal in / out</td><td class="num">180 / 100 ms</td><td class="num">100 / 80 ms</td><td>Ease-out</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p><b>Never animated:</b> search filtering, list selection, sorting, view switching, keyboard focus. Keyboard activation is instant; the transitions above are for pointer input.</p>
+
+      <div class="motion-demo">
+        <div class="row hover-100">Hover — 100 ms</div>
+        <div class="row disclosure-180">Hover — 180 ms disclosure</div>
+        <div class="row instant">Hover — instant, as for keyboard</div>
+      </div>
+
+      <hr class="rule">
+
+      <h2 id="thumbnails">Generative skill thumbnails</h2>
+      <p class="lede">
+        A skill with no artwork of its own gets a generated one instead of a grey placeholder.
+        The image is deterministic: the same identifiers always produce the same picture, on every
+        machine, in every session. Nothing is random, nothing animates, nothing is written to disk.
+      </p>
+
+      <h3>How an image is chosen</h3>
+      <p>Three integers seed the drawing, and each comes from a different place on purpose.</p>
+
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Seed</th><th>Derived from</th><th>Why there</th></tr></thead>
+        <tbody>
+          <tr><td>Palette index</td><td>Package id, rolling ×31 hash, mod 7</td><td>One package reads as one color family</td></tr>
+          <tr><td>Style index</td><td>Skill id, FNV-1a hash, mod 5</td><td>Siblings in a package stay distinguishable</td></tr>
+          <tr><td>Category index</td><td>Inferred from package and skill text</td><td>Rotates color assignment within the palette</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <pre><code>seed  = paletteIndex × 31 + styleIndex × 7 + categoryIndex
+color = palette[(offset + seed) mod palette.length]</code></pre>
+
+      <p>
+        Both hashes accumulate in 64-bit unsigned arithmetic and wrap, exactly as the Swift
+        original did — the JavaScript port uses <code>BigInt</code> so it produces byte-identical
+        indices rather than merely similar ones.
+      </p>
+
+      <h3>The five compositions</h3>
+      <p>
+        Flat fills only, one clipped rounded square, corner radius 22% of the edge. No symbol,
+        no gradient, no animation, no image allocation.
+      </p>
+      <ol>
+        <li><b>Cropped geometry</b> — an oversized circle and an angled slab, cropped by the frame, with one counterweight dot.</li>
+        <li><b>Mosaic tiles</b> — six rectangles on two shifting split lines.</li>
+        <li><b>Concentric forms</b> — four nested circles off an off-center anchor.</li>
+        <li><b>Radial fan</b> — six wedges from a corner anchor to a fixed boundary.</li>
+        <li><b>Woven strips</b> — two vertical and two horizontal rounded bands, with the verticals re-laid over the crossings so the weave reads.</li>
+      </ol>
+      <p class="dim">
+        Five more were prototyped and rejected: color bands, category grammar, nested arches,
+        folded ribbon, layered waves.
+      </p>
+
+      <h3 id="matrix">The 35 combinations</h3>
+      <p>Seven palettes down, five compositions across. This is the whole space, rendered live.</p>
+
+      <div class="thumb-matrix" id="thumb-matrix"></div>
+
+      <h3 id="playground">Try it</h3>
+      <p>
+        Type any package and skill identifier. The indices below are computed by the same functions
+        the interface will call.
+      </p>
+
+      <div class="playground">
+        <div>
+          <div class="field">
+            <label for="pkg-input">Package id</label>
+            <input type="text" id="pkg-input" value="anthropics/skills" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="skill-input">Skill id</label>
+            <input type="text" id="skill-input" value="anthropics/skills/pdf" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="cat-input">Category</label>
+            <select id="cat-input"></select>
+          </div>
+          <p class="resolved" id="resolved"></p>
+        </div>
+        <div class="thumb-sizes" id="thumb-sizes"></div>
+      </div>
+
+      <h4>In a sidebar row</h4>
+      <p>Artwork is 18 px in the sidebar and 42 px in the detail header. At 18 px the composition has to survive as a color impression, which is why every composition is flat and edge-cropped.</p>
+      <div class="rowdemo" id="rowdemo"></div>
+
+      <h3 id="resolution">Resolution ladder</h3>
+      <p>
+        A generated thumbnail is the last rung, not the first. Real artwork always wins, and the
+        source of what is shown is always nameable.
+      </p>
+      <ol>
+        <li>User upload</li>
+        <li>Package icon declared in the package</li>
+        <li>Skill icon declared in the skill</li>
+        <li>GitHub social preview</li>
+        <li>GitHub organization avatar</li>
+        <li>README image</li>
+        <li>GitHub owner avatar</li>
+        <li><b>Generated artwork</b> — deterministic, always available, never a spinner</li>
+      </ol>
+      <p>
+        Declared icons are drawn to fit; discovered and generated artwork fills. Category inference
+        scores keyword hits — 5 for the package title, 3 for skill names, 1 for prose — and falls
+        back to <i>General Utility</i> when the winner is weak or contested rather than guessing.
+      </p>
+
+      <hr class="rule">
+
+      <h2 id="prohibitions">Prohibitions</h2>
+      <p>These held for the macOS app and hold for the web interface. They are the fastest way to tell whether something belongs.</p>
+      <ul class="prohibit">
+        <li>No gradient text, decorative gradients, glass cards, glowing actions, or blue-filled controls by default.</li>
+        <li>No card grid for the library.</li>
+        <li>No nested cards in details or settings.</li>
+        <li>No decorative particles, fantasy ornament, or medieval styling, despite the name.</li>
+        <li>No multiple status badges competing inside one row.</li>
+        <li>No ad-hoc color at a call site. Roles only.</li>
+        <li>One surface owner per control. A quiet icon button gets one hover surface, not a nested pair.</li>
+      </ul>
+
+      <h2 id="carried">Carried over, not yet re-derived</h2>
+      <p>
+        Parts of the original system described a native macOS window rather than a visual language.
+        They are recorded here as intent, to be re-decided once the web interface has a shape —
+        not quietly translated into web rules they were never written for.
+      </p>
+      <ul>
+        <li><b>App shell</b> — a two-pane split view, a system-owned toolbar, and a fixed 40 px plain title bar. The two-pane idea survives; the window chrome does not apply.</li>
+        <li><b>SF Symbols allowlist</b> — the narrow exception for macOS-owned menus, empty states, and window chrome. On the web there is no such owner, so the Iconoir vocabulary stands alone.</li>
+        <li><b>Scroll-edge veils</b> — an 18 px material blur plus a sidebar-color fade, shown only while content continues past the edge. The behavior is right; the material needs a web equivalent.</li>
+        <li><b>Appearance settings</b> — appearance, density, interface text size, reader width, and code wrapping. All five still make sense; where they live in a transient interface is an open question.</li>
+        <li><b>Actionable status indicator</b> — at most one per row, highest priority wins: conflict or action required, then locally modified, then update available. This survives intact.</li>
+      </ul>
+
+      <h2 id="using">Using these files</h2>
+
+      <h4>Tokens</h4>
+      <pre><code>&lt;link rel="stylesheet" href="design/tokens.css"&gt;
+
+.skill-row {
+  height: var(--sb-sidebar-row-compact);
+  padding: 0 var(--sb-sidebar-inset-x);
+  border-radius: var(--sb-radius-medium);
+  font: var(--sb-weight-regular) var(--sb-type-row-label) var(--sb-font-ui);
+  color: var(--sb-text-primary);
+  transition: background-color var(--sb-duration-hover) var(--sb-ease-out);
+}
+.skill-row:hover { background: var(--sb-hover); }</code></pre>
+      <p>
+        Set <code>data-theme</code> on the root element to force
+        <code>light</code>, <code>dark</code>, <code>hc-light</code>, or <code>hc-dark</code>.
+        Leave it off to follow the system.
+      </p>
+
+      <h4>Thumbnails</h4>
+      <pre><code>&lt;script src="design/thumbnails.js"&gt;&lt;/script&gt;
+
+const spec = SpellbookThumbnails.thumbnailFor({
+  packageId: "anthropics/skills",
+  skillId:   "anthropics/skills/pdf",
+  packageName: "Anthropic Skills",
+  skillNames: ["pdf", "docx", "xlsx"],
+  prose: "Fill and extract PDF forms…"   // category is inferred if omitted
+});
+
+SpellbookThumbnails.render(canvasElement, spec, 42);   // sizes for the display
+SpellbookThumbnails.toDataURL(spec, 18);               // or a PNG data URL</code></pre>
+
+      <p class="dim" style="margin-top: var(--sb-space-32)">
+        Fonts are licensed under the SIL Open Font License 1.1; icons under the Iconoir MIT license;
+        agent marks remain the trademarks of their owners. License texts sit beside the assets.
+      </p>
+
+    </div>
+  </main>
+</div>
+
+<script src="thumbnails.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var T = window.SpellbookThumbnails;
+  var root = document.documentElement;
+
+  /* ---- Appearance preview ------------------------------------------------ */
+
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-theme-set]"));
+  themeButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      var value = button.getAttribute("data-theme-set");
+      if (value) root.setAttribute("data-theme", value);
+      else root.removeAttribute("data-theme");
+      themeButtons.forEach(function (other) {
+        other.setAttribute("aria-pressed", String(other === button));
+      });
+      paintPaletteSwatches();
+    });
+  });
+
+  /* ---- Color ------------------------------------------------------------- */
+
+  var PALETTE_ROLES = [
+    ["Canvas", "--sb-canvas", "#FBFAF8", "#222326", "#FFFEFC", "#191A1D", "Reader and window content"],
+    ["Sidebar", "--sb-sidebar", "#F4F3F1", "#292A2E", "#EFEEEB", "#242529", "Navigation background"],
+    ["Raised", "--sb-raised", "#FEFDFB", "#313238", "#FFFFFF", "#37383E", "Elevated surface"],
+    ["Grouped", "--sb-grouped", "#F0EFEC", "#2B2C30", "#EAE9E5", "#313238", "Inset grouped controls"],
+    ["Hover", "--sb-hover", "#EDECE9", "#34353A", "#E5E4E0", "#3D3E44", "Pointer affordance"],
+    ["Selection", "--sb-selection", "#E4E3DF", "#3C3D43", "#D8D7D2", "#484A51", "Neutral selected surface"],
+    ["Primary text", "--sb-text-primary", "#242529", "#E9E8E5", "#17181B", "#F7F6F2", "Main content"],
+    ["Secondary text", "--sb-text-secondary", "#686A70", "#B7B6B2", "#54565B", "#CDCCC8", "Supporting content"],
+    ["Tertiary text", "--sb-text-tertiary", "#717378", "#8F908E", "#64666B", "#A7A8A5", "Quiet metadata"],
+    ["Separator", "--sb-separator", "#DAD9D5", "#47484D", "#C7C6C1", "#5B5C62", "Boundaries"],
+    ["Disabled", "--sb-disabled", "#A5A6A4", "#747579", "#8D8E8C", "#8A8B90", "Unavailable content"],
+    ["Interaction", "--sb-interaction", "#5C5E63", "#BBBDB9", "#44464B", "#D4D4CF", "Also focus, link, update"],
+    ["Success", "--sb-success", "#2F7651", "#69B88B", "#236440", "#82CCA2", "Positive state"],
+    ["Warning", "--sb-warning", "#9A5A12", "#E2A052", "#814704", "#F2B66D", "Caution"],
+    ["Error", "--sb-error", "#AB4138", "#E17A72", "#922E28", "#F0948D", "Failure or conflict"],
+    ["Diff added", "--sb-diff-added", "#EAF4EE", "#26352D", "#DCEEE3", "#2D4437", "Added content surface"],
+    ["Diff removed", "--sb-diff-removed", "#F7ECEA", "#382A2B", "#F1DEDA", "#4A3031", "Removed content surface"]
+  ];
+
+  var paletteBody = document.getElementById("palette-rows");
+  PALETTE_ROLES.forEach(function (role) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + role[0] + "</td>" +
+      '<td><span class="swatch" data-token="' + role[1] + '"></span></td>' +
+      '<td class="hex">' + role[1] + "</td>" +
+      '<td class="hex">' + role[2] + "</td>" +
+      '<td class="hex">' + role[3] + "</td>" +
+      '<td class="hex">' + role[4] + "</td>" +
+      '<td class="hex">' + role[5] + "</td>" +
+      '<td class="dim">' + role[6] + "</td>";
+    paletteBody.appendChild(tr);
+  });
+
+  function paintPaletteSwatches() {
+    var styles = getComputedStyle(root);
+    Array.prototype.forEach.call(document.querySelectorAll(".swatch[data-token]"), function (node) {
+      node.style.background = styles.getPropertyValue(node.getAttribute("data-token")).trim();
+    });
+  }
+
+  /* ---- Typography specimens ---------------------------------------------- */
+
+  var TYPE_ROLES = [
+    ["Detail title", 24, 700, "ui", "Spellbook"],
+    ["Sheet title", 22, 700, "ui", "Review update"],
+    ["Section title", 15, 600, "ui", "Installations"],
+    ["Reader body", 15, 400, "ui", "The reader is the primary surface; management sits beside it."],
+    ["Body", 14, 400, "ui", "Skill scanning found 42 packages across 3 discovery roots."],
+    ["Row label", 14, 400, "ui", "artifact-design"],
+    ["Control", 14, 400, "ui", "Connect source"],
+    ["Metadata", 12, 400, "ui", "Updated 4 days ago · verified"],
+    ["Micro", 11, 400, "ui", "PROVENANCE"],
+    ["Code body", 13, 400, "code", "~/.claude/skills/impeccable/SKILL.md"],
+    ["Code metadata", 12, 400, "code", "10a66d02c6e3c94437bbf268352b1652e9eae7e5"]
+  ];
+
+  var specimens = document.getElementById("specimens");
+  TYPE_ROLES.forEach(function (role) {
+    var wrap = document.createElement("div");
+    wrap.className = "specimen";
+    var label = document.createElement("div");
+    label.className = "label";
+    label.textContent = role[0] + " · " + role[1] + " / " + role[2];
+    var sample = document.createElement("div");
+    sample.className = "sample";
+    sample.textContent = role[4];
+    sample.style.fontSize = role[1] + "px";
+    sample.style.fontWeight = role[2];
+    sample.style.fontFamily = role[3] === "code"
+      ? "var(--sb-font-code)"
+      : "var(--sb-font-ui)";
+    if (role[3] === "code") sample.style.fontVariantLigatures = "none";
+    wrap.appendChild(label);
+    wrap.appendChild(sample);
+    specimens.appendChild(wrap);
+  });
+
+  /* ---- Scales ------------------------------------------------------------ */
+
+  var spaceScale = document.getElementById("space-scale");
+  [2, 4, 6, 8, 12, 16, 20, 24, 32, 48].forEach(function (step) {
+    var figure = document.createElement("figure");
+    figure.innerHTML =
+      '<div class="bar" style="width:' + step + 'px"></div>' +
+      "<figcaption>" + step + "</figcaption>";
+    spaceScale.appendChild(figure);
+  });
+
+  var radiusScale = document.getElementById("radius-scale");
+  [4, 6, 8, 10, 12].forEach(function (step) {
+    var figure = document.createElement("figure");
+    figure.innerHTML =
+      '<div class="box" style="width:48px;height:48px;border-radius:' + step + 'px"></div>' +
+      "<figcaption>" + step + "</figcaption>";
+    radiusScale.appendChild(figure);
+  });
+
+  /* ---- Icons ------------------------------------------------------------- */
+
+  var ICONS = Array.prototype.map.call(
+    document.querySelectorAll("symbol[id^='i-']"),
+    function (symbol) { return symbol.id.slice(2); }
+  ).sort();
+
+  var iconGrid = document.getElementById("icon-grid");
+  ICONS.forEach(function (name) {
+    var cell = document.createElement("div");
+    cell.className = "icon-cell";
+    cell.innerHTML =
+      '<svg width="20" height="20" aria-hidden="true"><use href="#i-' + name + '"/></svg>' +
+      '<span class="name">' + name + "</span>";
+    iconGrid.appendChild(cell);
+  });
+
+  var iconSizes = document.getElementById("icon-sizes");
+  [10, 12, 14, 16, 20].forEach(function (size) {
+    var figure = document.createElement("figure");
+    figure.innerHTML =
+      '<svg width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#i-refresh-double"/></svg>' +
+      "<figcaption>" + size + " px</figcaption>";
+    iconSizes.appendChild(figure);
+  });
+
+  var iconRoles = document.getElementById("icon-roles");
+  [
+    ["Primary", "--sb-text-primary", "check-circle"],
+    ["Secondary", "--sb-text-secondary", "folder"],
+    ["Interactive", "--sb-interaction", "link"],
+    ["Disabled", "--sb-disabled", "link-slash"],
+    ["Success", "--sb-success", "badge-check"],
+    ["Warning", "--sb-warning", "warning-triangle"],
+    ["Error", "--sb-error", "warning-circle"],
+    ["Update", "--sb-update", "download-circle"]
+  ].forEach(function (role) {
+    var figure = document.createElement("figure");
+    figure.innerHTML =
+      '<svg width="20" height="20" aria-hidden="true" style="color:var(' + role[1] + ')"><use href="#i-' + role[2] + '"/></svg>' +
+      "<figcaption>" + role[0] + "</figcaption>";
+    iconRoles.appendChild(figure);
+  });
+
+  /* ---- Thumbnail matrix -------------------------------------------------- */
+
+  var matrix = document.getElementById("thumb-matrix");
+  var table = document.createElement("table");
+  var head = document.createElement("thead");
+  var headRow = document.createElement("tr");
+  headRow.innerHTML = "<th></th>";
+  T.COMPOSITION_NAMES.forEach(function (name) {
+    var th = document.createElement("th");
+    th.textContent = name;
+    headRow.appendChild(th);
+  });
+  head.appendChild(headRow);
+  table.appendChild(head);
+
+  var body = document.createElement("tbody");
+  T.PALETTE_NAMES.forEach(function (paletteName, paletteIndex) {
+    var tr = document.createElement("tr");
+    var rowHead = document.createElement("th");
+    rowHead.className = "row-head";
+    rowHead.textContent = paletteName;
+    tr.appendChild(rowHead);
+    T.COMPOSITIONS.forEach(function (_, styleIndex) {
+      var td = document.createElement("td");
+      var canvas = document.createElement("canvas");
+      canvas.className = "thumb";
+      T.render(canvas, {
+        paletteIndex: paletteIndex,
+        styleIndex: styleIndex,
+        categoryIndex: 0
+      }, 88);
+      td.appendChild(canvas);
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+  table.appendChild(body);
+  matrix.appendChild(table);
+
+  /* ---- Playground -------------------------------------------------------- */
+
+  var categorySelect = document.getElementById("cat-input");
+  T.CATEGORIES.forEach(function (entry) {
+    var option = document.createElement("option");
+    option.value = entry[0];
+    option.textContent = entry[1];
+    categorySelect.appendChild(option);
+  });
+  categorySelect.value = "documents";
+
+  var sizesHost = document.getElementById("thumb-sizes");
+  var SIZES = [18, 42, 96, 160];
+  var sizeCanvases = SIZES.map(function (size) {
+    var figure = document.createElement("figure");
+    var canvas = document.createElement("canvas");
+    figure.appendChild(canvas);
+    var caption = document.createElement("figcaption");
+    caption.textContent = size + " px";
+    figure.appendChild(caption);
+    sizesHost.appendChild(figure);
+    return { canvas: canvas, size: size };
+  });
+
+  var packageInput = document.getElementById("pkg-input");
+  var skillInput = document.getElementById("skill-input");
+  var resolved = document.getElementById("resolved");
+
+  function updatePlayground() {
+    var spec = T.thumbnailFor({
+      packageId: packageInput.value,
+      skillId: skillInput.value,
+      category: categorySelect.value
+    });
+    var seed = spec.paletteIndex * 31 + spec.styleIndex * 7 + spec.categoryIndex;
+    resolved.innerHTML =
+      "palette <b>" + spec.paletteIndex + "</b> · " + T.PALETTE_NAMES[spec.paletteIndex] + "<br>" +
+      "style <b>" + spec.styleIndex + "</b> · " + T.COMPOSITION_NAMES[spec.styleIndex] + "<br>" +
+      "category <b>" + spec.categoryIndex + "</b> · seed <b>" + seed + "</b>";
+    sizeCanvases.forEach(function (entry) {
+      T.render(entry.canvas, spec, entry.size);
+    });
+  }
+
+  packageInput.addEventListener("input", updatePlayground);
+  skillInput.addEventListener("input", updatePlayground);
+  categorySelect.addEventListener("change", updatePlayground);
+
+  /* ---- Sidebar row sample ------------------------------------------------ */
+
+  var ROW_SAMPLES = [
+    ["anthropics/skills", "anthropics/skills/pdf", "pdf", null],
+    ["anthropics/skills", "anthropics/skills/docx", "docx", "update"],
+    ["anthropics/skills", "anthropics/skills/xlsx", "xlsx", null],
+    ["impeccable", "impeccable/impeccable", "impeccable", "modified"],
+    ["mastermind", "mastermind/visualize", "mastermind", null]
+  ];
+
+  var rowHost = document.getElementById("rowdemo");
+  ROW_SAMPLES.forEach(function (sample, index) {
+    var row = document.createElement("div");
+    row.className = "skill-row" + (index === 3 ? " is-selected" : "");
+    var canvas = document.createElement("canvas");
+    T.render(canvas, T.thumbnailFor({
+      packageId: sample[0],
+      skillId: sample[1],
+      category: "generalUtility"
+    }), 18);
+    row.appendChild(canvas);
+    var name = document.createElement("span");
+    name.className = "name";
+    name.textContent = sample[2];
+    row.appendChild(name);
+    var status = document.createElement("span");
+    status.className = "status";
+    if (sample[3] === "update") {
+      status.innerHTML = '<svg width="10" height="10" style="color:var(--sb-update)" aria-label="Update available"><use href="#i-download-circle"/></svg>';
+    } else if (sample[3] === "modified") {
+      status.innerHTML = '<svg width="10" height="10" style="color:var(--sb-warning)" aria-label="Locally modified"><use href="#i-edit-pencil"/></svg>';
+    }
+    row.appendChild(status);
+    rowHost.appendChild(row);
+  });
+
+  /* ---- Current-section highlighting -------------------------------------- */
+
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav a"));
+  var targets = navLinks
+    .map(function (link) { return document.getElementById(link.getAttribute("href").slice(1)); })
+    .filter(Boolean);
+
+  if ("IntersectionObserver" in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        navLinks.forEach(function (link) {
+          link.classList.toggle("is-current", link.getAttribute("href") === "#" + entry.target.id);
+        });
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    targets.forEach(function (target) { observer.observe(target); });
+  }
+
+  paintPaletteSwatches();
+  updatePlayground();
+})();
+</script>
+
+</body>
+</html>

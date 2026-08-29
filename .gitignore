@@ -1,8 +1,2 @@
 .DS_Store
-.build/
-DerivedData/
-build/
-*.xcuserstate
-xcuserdata/
-.swiftpm/xcode/package.xcworkspace/xcuserdata/
-Packages/SpellbookKit/.build/
+node_modules/

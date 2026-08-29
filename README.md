@@ -1,52 +1,45 @@
 # Spellbook
 
-Spellbook is a native macOS library for discovering, reading, and safely managing skills installed across Claude Code, Cursor, and Codex.
+A design language and a generative artwork system, waiting for their next interface.
 
-Product and implementation context:
+The macOS SwiftUI application that used to live here has been removed. Spellbook's next form is a
+temporary interface that runs in the browser, opened by the agent from a skill and shaped by
+whatever codebase it is looking at. That interface is not designed yet.
 
-- [Product](PRODUCT.md)
-- [Design system](DESIGN.md)
-- [Locked brief](docs/SPELLBOOK-BRIEF.md)
-- [Build plan](docs/BUILD-PLAN.md)
-- [Implementation verification](docs/IMPLEMENTATION-VERIFICATION.md)
-- [Release checklist](docs/RELEASE-CHECKLIST.md)
+What survived the reset:
 
-## Development
+| Path | What it is |
+| --- | --- |
+| `design/index.html` | The documentation and live reference. Open it. |
+| `design/tokens.css` | Every design constant as a CSS custom property, in four palettes. |
+| `design/thumbnails.js` | The generative skill thumbnail renderer, dependency-free. |
+| `design/fonts/` | Schibsted Grotesk and Commit Mono, with OFL licenses. |
+| `design/icons/` | 46 Iconoir glyphs, 4 agent marks, and provenance records. |
 
-Generate the Xcode project:
-
-```sh
-xcodegen generate
-```
-
-Build the app without a signing identity:
+## Reading it
 
 ```sh
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
-  -project Spellbook.xcodeproj \
-  -scheme Spellbook \
-  -destination 'platform=macOS' \
-  CODE_SIGNING_ALLOWED=NO \
-  build
+python3 -m http.server -d design 8000   # then open http://localhost:8000
 ```
 
-Run package and macOS UI tests:
+Opening `design/index.html` directly works too, but some browsers refuse to load fonts over
+`file://` and the page falls back to a system sans. Serving it shows the real typefaces.
 
-```sh
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test \
-  --package-path Packages/SpellbookKit \
-  -Xswiftc -warnings-as-errors
+## The thumbnail generator
 
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
-  -project Spellbook.xcodeproj \
-  -scheme Spellbook \
-  -destination 'platform=macOS' \
-  test
+`thumbnails.js` is a port of the Swift renderer, not a reimplementation. Both hashes accumulate in
+64-bit unsigned arithmetic and wrap identically, so a given package and skill id produce the same
+one of 35 images they always did.
+
+```js
+const spec = SpellbookThumbnails.thumbnailFor({
+  packageId: "anthropics/skills",
+  skillId: "anthropics/skills/pdf"
+});
+SpellbookThumbnails.render(canvas, spec, 42);
 ```
 
-## Direct distribution
+## History
 
-The release scripts intentionally require an Apple Developer team and local
-notary keychain profile; credentials are never stored in this repository. See
-[the release checklist](docs/RELEASE-CHECKLIST.md) before producing a public
-artifact.
+The SwiftUI app, its plans, audits, and prototype captures are in git history at `2576040` and
+earlier. Nothing was lost, only set down.
