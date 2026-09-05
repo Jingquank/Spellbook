@@ -265,6 +265,50 @@
   --sb-diff-removed: #4a3031;
 }
 
+/* Increase Contrast also applies when an appearance switch has stamped the theme explicitly. */
+@media (prefers-contrast: more) {
+  :root[data-theme="light"] {
+    
+      --sb-canvas: #fffefc;
+      --sb-sidebar: #efeeeb;
+      --sb-raised: #ffffff;
+      --sb-grouped: #eae9e5;
+      --sb-hover: #e5e4e0;
+      --sb-selection: #d8d7d2;
+      --sb-text-primary: #17181b;
+      --sb-text-secondary: #54565b;
+      --sb-text-tertiary: #64666b;
+      --sb-separator: #c7c6c1;
+      --sb-disabled: #8d8e8c;
+      --sb-interaction: #44464b;
+      --sb-success: #236440;
+      --sb-warning: #814704;
+      --sb-error: #922e28;
+      --sb-diff-added: #dceee3;
+      --sb-diff-removed: #f1deda;
+  }
+  :root[data-theme="dark"] {
+    
+      --sb-canvas: #191a1d;
+      --sb-sidebar: #242529;
+      --sb-raised: #37383e;
+      --sb-grouped: #313238;
+      --sb-hover: #3d3e44;
+      --sb-selection: #484a51;
+      --sb-text-primary: #f7f6f2;
+      --sb-text-secondary: #cdccc8;
+      --sb-text-tertiary: #a7a8a5;
+      --sb-separator: #5b5c62;
+      --sb-disabled: #8a8b90;
+      --sb-interaction: #d4d4cf;
+      --sb-success: #82cca2;
+      --sb-warning: #f2b66d;
+      --sb-error: #f0948d;
+      --sb-diff-added: #2d4437;
+      --sb-diff-removed: #4a3031;
+  }
+}
+
 /* Reduced Motion shortens transitions; it does not remove state changes. */
 @media (prefers-reduced-motion: reduce) {
   :root {
