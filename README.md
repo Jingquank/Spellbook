@@ -1,3 +1,25 @@
+<pre align="center">
+███████  ██████   ███████  ██       ██       ██████    █████    █████   ██   ██
+██       ██   ██  ██       ██       ██       ██   ██  ██   ██  ██   ██  ██  ██ 
+███████  ██████   █████    ██       ██       ██████   ██   ██  ██   ██  █████  
+     ██  ██       ██       ██       ██       ██   ██  ██   ██  ██   ██  ██  ██ 
+███████  ██       ███████  ███████  ███████  ██████    █████    █████   ██   ██
+
+      every skill install on the machine, as one book
+
+╭───────────────────────────╮╭───────────────────────────╮
+│  Contents                 ││  spellbook                │
+│                           ││                           │
+│  FROM THIS PROJECT      1 ││  Read a skill. Select a   │
+│  ▪ spellbook ·········· 1 ││  passage and leave a      │
+│                           ││  Note. Send the Brief.    │
+│  ON THIS DEVICE        10 ││                           │
+│  ▪ Bench install ······ 6 ││  The agent edits the      │
+│  ▪ Codex system ······· 6 ││  file; the page reloads.  │
+│  ▪ Installed together · 7 ││  The tab never writes.    │
+╰───────────────────────────╯╰───────────────────────────╯
+</pre>
+
 # Spellbook
 
 Every skill Install on your machine as one book, opened by your coding agent from a skill.
