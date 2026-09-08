@@ -14,9 +14,9 @@
 │  ▪ spellbook ·········· 1 ││  passage and leave a      │
 │                           ││  Note. Send the Brief.    │
 │  ON THIS DEVICE        10 ││                           │
-│  ▪ Bench install ······ 6 ││  The agent edits the      │
+│  ▪ Bench · pack ······· 6 ││  The agent edits the      │
 │  ▪ Codex system ······· 6 ││  file; the page reloads.  │
-│  ▪ Installed together · 7 ││  The tab never writes.    │
+│  ▪ emilkowalski/skills  7 ││  The tab never writes.    │
 ╰───────────────────────────╯╰───────────────────────────╯
 </pre>
 
@@ -116,23 +116,24 @@ node ~/.claude/skills/spellbook/scripts/spellbook.mjs stop
 **In the tab.**
 
 - **Contents** (left page). Sections are Installs; entries are skills with page numbers. Sections
-  fold; the open one follows the page you are reading. Guessed groups offer "name it" and
-  "not a group" on hover; "drift" opens a popover listing the differing copies and a button that
+  fold; the open one follows the page you are reading. Each row shows its Origin kind, or
+  "probably …" for a Hinted Origin on a Loose Skill. "drift" opens a popover listing the differing copies and a button that
   sends the agent a Brief to reconcile them.
 - **Reader** (right page). SKILL.md first, sibling Markdown files as tabs, then a Files list.
   Select text and press **Add note**, or **Note on skill** for an unanchored one. Drafts leave
   together as one Brief; **Preview Brief** shows exactly what the agent will receive and
   **Copy Brief** puts it on the clipboard for agents without the server.
-- **Settings** is the last page of the book: Appearance, the contents **Register** (Grimoire
-  prose or Folio mono), Reader width and text size, Connection, the scanned Roots, the groups you
-  named or dismissed, and the keys.
-- **Keys**, in both registers: `←` `→` turn pages; `j` `k` move the cursor over sections and
+- **Settings** is the last page: Appearance, Reader width and text size, Connection, Roots,
+  Records (every lockfile and manifest read, with entry counts), and Keys.
+- **Keys**: `←` `→` turn pages; `j` `k` move the cursor over sections and
   entries; `Enter` opens an entry or folds a section; `h` `l` fold and unfold; `z` folds all; `/`
-  filters; `s` cycles the sort (book, name, date, size) for contents and pages alike; `r` names a
-  guessed group and `x` says it is not one; `Esc` leaves Settings or clears the filter.
+  filters; `s` cycles the sort (book, name, date, size) for contents and pages alike;
+  `Esc` leaves Settings or clears the filter.
 
-Everything the tab remembers (register, width, text size, group names and dismissals, appearance)
-lives in the browser's storage for this device. Nothing is written into a skill folder.
+Appearance, Reader width and text size persist in browser storage. Each project has a stable
+port and a tab titled "<project> · Spellbook". Starting with a tab connected prints its URL without
+opening another tab. An empty project names the folder where its own skills would appear.
+The tab has no curation state or controls to name, dismiss or group Installs.
 
 ## Concepts
 
@@ -140,15 +141,16 @@ The vocabulary is defined in [CONTEXT.md](CONTEXT.md); this is the short version
 
 | Term | Meaning |
 | --- | --- |
-| **Install** | The unit a user acquired and the unit artwork belongs to. One Install may hold one skill or many. |
-| **Recorded Install** | An Install a manifest attests to: a Bench `.bench-install.json`, a plugin manifest, Codex's system skills. |
-| **Inferred Install** ("guessed") | Skills that arrived on the same day in the same root, grouped as a guess. Always nameable, always dismissable. |
-| **Loose Skill** | A skill belonging to no Install. Not an error, not hidden. |
+| **Install** | Skills that share one Origin, and the unit artwork belongs to. |
+| **Origin** | Where an Install came from, with the facts that establish it. |
+| **Recorded Origin** | Written by an installer: a lockfile, plugin record, pack manifest or Codex system root. Forms an Install. |
+| **Matched Origin** | Agreeing local facts, such as a symlink into a repository or a description found in that repository with its remote. Forms an Install. |
+| **Hinted Origin** | A content signal shown as "probably …"; it never groups skills. |
+| **Loose Skill** | A skill whose Origin is Hinted or Unknown. Not an error, not hidden. |
 | **Source** | Where an Install was found: the current project, or the device. Never "global". |
 | **Agent Mark** | The mark of each agent that can reach an Install. A symlinked or identical copy under another agent's root is the same Install wearing another mark. |
 | **Drift** | The same skill differs between agent roots. A state of one Install, never a second Install. |
 | **Group Thumbnail** | Deterministic generated artwork for an Install, drawn by `design/thumbnails.js`. |
-| **Register** | The voice of the contents page: Prose (Grimoire) or Mono (Folio). Same rows, same keys, same page numbers; only the type changes. |
 | **Note** and **Brief** | A Note is a remark pinned to a range or to the skill. A Brief is the batch of Notes delivered to the agent: file, quoted lines, requests. |
 
 ## What the scanner reads
@@ -158,15 +160,22 @@ The vocabulary is defined in [CONTEXT.md](CONTEXT.md); this is the short version
 | `<project>/.claude/skills`, `<project>/.agents/skills`, `<project>/.codex/skills` | project | Grouped under "From this project". |
 | `~/.agents/skills` | Codex | The shared root. Claude Code reaches it through symlinks in `~/.claude/skills`. |
 | `~/.claude/skills` | Claude Code | Symlinks collapse into the same Install; real copies that differ become Drift. |
-| `~/.claude/plugins/installed_plugins.json` | Claude Code | Each plugin with skills is a Recorded Install with its version. |
-| `~/.codex/skills` and `~/.codex/skills/.system` | Codex | System skills form one quiet Recorded Install. |
+| `~/.claude/plugins/installed_plugins.json` | Claude Code | Each plugin with skills is one Recorded Origin, including its version. |
+| `~/.codex/skills` and `~/.codex/skills/.system` | Codex | System skills form one quiet Install from openai/skills. |
 | `~/.gemini/skills`, `~/.cursor/skills` | Gemini, Cursor | Copies are merged into their Install; launching from these agents is not wired yet. |
 
-Identity rules: copies that resolve to the same real path are one copy; copies with identical
-`SKILL.md` and file lists are one Install with several marks; copies that differ are one Install in
-Drift, and the popover shows each copy's root, line count, file count and date. Bench and plugin
-manifests give Recorded Installs; everything else clusters by root and install day into Inferred
-Installs, or stays a Loose Skill.
+Copies that resolve to the same real path are one copy. A skill with matching copies wears several
+Agent Marks; differing copies stay together in Drift. The popover shows each copy's root, line
+count, file count and date.
+
+Origin resolution reads, in order: the Agent Skills CLI `~/.agents/.skill-lock.json`, Claude's
+plugin manifest and `known_marketplaces.json`, Bench's `.bench-install.json`, Codex's system root,
+local repository symlinks, and exact frontmatter descriptions in local repositories. Candidate
+repositories include working copies under `~/Code`, `~/Developer` and siblings of discovered
+local repositories. Text matching skips skill roots inside other projects, `.git`, `node_modules`,
+`dist`, and files over 2 MB. CLI package records can corroborate matches; content URLs are hints.
+Missing skills named in a lockfile are ignored. Installs group by Origin, never install date.
+Records in Settings include successful and unreadable lockfiles and manifests.
 
 `npm run scan -- --compact` prints the Survey the tab would show, without file contents.
 
@@ -176,29 +185,33 @@ Installs, or stays a Loose Skill.
 
 | Command | Effect | Exit |
 | --- | --- | --- |
-| `start [--project DIR] [--agent NAME] [--no-open]` | Start the server if it is not running for this project, open the tab, print the URL. | 0 |
+| `start [--project DIR] [--agent NAME] [--no-open]` | Start the server if it is not running for this project, open a tab only if none is connected, print the URL. | 0 |
 | `wait-brief [--timeout S]` | Block until one Brief arrives (default 600 s), print it, exit. Run it again for the next. | 0 brief · 3 timeout · 2 server gone |
 | `status` | Whether a server runs for this project, and where. | 0 |
+| `status --all` | List every live project, URL, pid and connected tab count. | 0 |
 | `rescan` | Re-read the roots. | 0 |
 | `stop` | Shut the server down. | 0 |
+| `stop --all` | Shut down every live Spellbook server. | 0 |
 
 The server's state lives in `$TMPDIR/spellbook/<project-hash>.json` (URL, port, pid) with a
 `.briefs.jsonl` log beside it. Nothing is written into the project or the skill roots.
 
 ### Server: `node server/server.mjs`
 
-Flags: `--project DIR` (default cwd), `--port N` (default: a free port), `--agent claude-code|codex|cursor`, `--no-open`.
+Flags: `--project DIR` (default cwd), `--port N` (default: 40000 + project hash modulo 10000, with up to 20 ports tried), `--agent claude-code|codex|cursor`, `--no-open`, `--idle MINUTES` (default 30).
+The server exits after this interval without an SSE tab or waiting agent. Root discovery is
+debounced by 500 ms, including newly created roots and folders that later gain SKILL.md.
 
 | Route | Purpose |
 | --- | --- |
 | `GET /` and `/assets/*` | The built app from `app/dist`. |
 | `GET /design/*` | Tokens, fonts, icons, the thumbnail renderer, the favicon. |
-| `GET /api/survey` | The Survey: Installs, skills with `SKILL.md` inline, roots, agent. |
+| `GET /api/survey` | The Survey: Installs, skills with `SKILL.md` inline, roots, Records, agent. |
 | `GET /api/file?install=&skill=&path=` | A text file inside a skill folder; paths cannot escape it. |
 | `POST /api/briefs` | Queue a Brief `{ installId, skillId, file, path, notes[], text }`. |
 | `GET /api/briefs/next?wait=1` | Long-poll for the next undelivered Brief (25 s), used by `wait-brief`. |
 | `GET /api/events` | SSE: `hello`, `changed` (a skill file changed on disk), `brief-taken`, `survey`. |
-| `POST /api/rescan`, `POST /api/shutdown`, `GET /api/health` | Housekeeping. |
+| `POST /api/rescan`, `POST /api/shutdown`, `GET /api/health` | Housekeeping; health includes SSE clients and waiting agents. |
 
 ## Development
 
@@ -210,7 +223,8 @@ npm run dev              # vite dev server on :5178, proxying /api and /design t
 npm run scan -- --compact                  # print the Survey
 ```
 
-The app has no test suite yet; the loop is verified by hand: build, `start`, open a skill, send a
+Scanner and server integration tests run with `node --test server/scan.test.mjs` and
+`node server/server.test.mjs`. The tab loop is also verified by hand: build, `start`, open a skill, send a
 Brief, receive it with `wait-brief`, edit the file, watch the reload.
 
 Dependencies, all in `app/`: react, react-dom, `@base-ui/react` (popovers, menus, toggle groups),
@@ -237,7 +251,7 @@ server has none.
 
 [DESIGN.md](DESIGN.md) is the source. In brief: warm graphite neutrals from `design/tokens.css`
 in light, dark and two Increase Contrast palettes; Schibsted Grotesk for the interface and
-Commit Mono for anything code-like; colour only in generated artwork, agent marks and the single
+Commit Mono only for rendered code and the Brief preview; colour only in generated artwork, agent marks and the single
 word "drift". One easing and six authored motions, each with a named purpose. The canvas behind
 the book is faint graph paper and the right page carries a 4 px halftone screen, both drawn from
 the tokens on pseudo-elements under the type.
@@ -250,6 +264,8 @@ its five compositions so tiles stop colliding; the code still ships the original
 - [ADR 0001](docs/adr/0001-parameterise-thumbnail-compositions.md): parameterise the five thumbnail compositions.
 - [ADR 0002](docs/adr/0002-browser-tab-reads-agent-writes.md): the tab reads and annotates; the agent is the only writer, reached through a skill-launched local server.
 - [ADR 0003](docs/adr/0003-react-vite-tab-served-by-node-skill.md): a Vite-built React app served by a dependency-free Node server the skill starts.
+- [ADR 0004](docs/adr/0004-group-installs-by-origin-evidence.md): group by Origin evidence; the tab has no curation.
+- [Origin and one voice plan](docs/plans/2026-09-07-origin-and-one-voice.md): the redesign decisions and verification.
 - [Design brief](docs/plans/2026-09-05-survey-directions.md): the interview, the ten directions, the two rounds that led to one book with two Registers, and links to every prototype artifact.
 - [Implementation plan](docs/plans/2026-09-05-implementation.md): the build, the critique pass, the motion pass.
 
@@ -257,6 +273,8 @@ its five compositions so tiles stop colliding; the code still ships the original
 
 - Works end to end on macOS with Claude Code. Codex reads the shared root and receives the same
   Briefs through the launcher; Cursor and Gemini are detected as marks only.
+- Browser preferences persist across restarts at each project’s stable port; a port collision
+  can temporarily move that project to a different browser origin.
 - `app/dist` is not committed; build once after cloning.
 - The entry motions use `@starting-style`, which needs Chrome 117, Safari 17.5 or Firefox 129;
   older browsers show the end state. Note highlights use the CSS Custom Highlight API and degrade

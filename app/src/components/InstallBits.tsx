@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment } from "react";
 import { Popover } from "@base-ui/react/popover";
-import { toast } from "sonner";
-import { AGENT_NAMES, type Install, type Mark } from "../types";
-import { useGroups, useSurvey } from "../store";
+import { AGENT_NAMES, type Install, type Mark, type Origin } from "../types";
+import { useSurvey } from "../store";
 import { reconcileBrief, sendAgentBrief } from "../brief";
 import { Icon } from "../icons";
 
@@ -15,10 +14,17 @@ export function Marks({ marks, size }: { marks: Mark[]; size?: "lg" }) {
 }
 
 export function kindLabel(i: Install): string {
-  if (i.kind === "recorded") return "Recorded";
-  if (i.kind === "inferred") return "Guessed";
-  if (i.kind === "plugin") return "Plugin";
-  return i.skills.length === 1 ? "Loose skill" : "Loose";
+  return i.origin.grade === "hinted" ? "probably " + (i.origin.slug || i.origin.name) : i.origin.kind;
+}
+export function OriginLine({ origin }: { origin: Origin }) {
+  const detail = [origin.slug, origin.path, origin.ref, origin.version && "version " + origin.version].filter(Boolean);
+  return <div className="rd-origin" aria-label="Origin">
+    <div><b>{origin.kind} · {origin.name}</b><span> · {origin.grade === "hinted" ? "probably · Hinted Origin" : origin.grade.charAt(0).toUpperCase() + origin.grade.slice(1) + " Origin"}</span></div>
+    {detail.length > 0 && <div className="detail">{detail.join(" · ")}</div>}
+    {origin.url && <div className="detail">{origin.url}</div>}
+    {origin.record && <div className="detail">Record: {origin.record}</div>}
+    {origin.evidence.map((e) => <p key={e}>{e}</p>)}
+  </div>;
 }
 export function describe(i: Install): string { return i.skills.length === 1 ? i.skills[0].description : i.skills.length + " skills: " + i.skills.map((s) => s.name).join(", ") + "."; }
 export function totalLines(i: Install): number { return i.skills.reduce((a, s) => a + (s.lines || 0), 0); }
@@ -36,12 +42,7 @@ export function driftSummary(i: Install): string {
 }
 
 export function Badges({ i }: { i: Install }) {
-  return <>
-    {i.kind === "inferred" && <span className="badge guess" title="Spellbook guessed this group because the skills arrived on the same day. Name it, or say it is not a group.">Guessed</span>}
-    {i.kind === "recorded" && <span className="badge" title={"A manifest lists these skills as one install: " + (i.manifest || "")}>Recorded</span>}
-    {i.kind === "plugin" && <span className="badge" title="Installed as a plugin; its skills arrive and update together.">Plugin {i.version}</span>}
-    {i.drift && <span className="badge drift" title={driftSummary(i)}><span className="drift-dot" />Drift</span>}
-  </>;
+  return <><span className="origin-word" title={i.origin.evidence[0]}>{kindLabel(i)}</span>{i.drift && <DriftPopover i={i} className="drift">drift</DriftPopover>}</>;
 }
 
 /* The Drift popover: both copies of each drifted skill, and one request to the agent. */
@@ -58,7 +59,7 @@ export function DriftPopover({ i, children, className }: { i: Install; children:
             const d = s.driftDetail!;
             const extra = Object.keys(d.onlyIn || {}).filter((k) => d.onlyIn[k].length).map((k) => d.onlyIn[k].join(", ") + " only in " + k).join("; ");
             return <div className="row" key={s.id}><b>{s.name}</b>
-              {d.copies.map((c) => <><span key={c.root + "r"}>{c.root}</span><span key={c.root + "v"}>{c.lines} lines · {c.files} file{c.files === 1 ? "" : "s"}{c.updated && <span className="dt"> · {c.updated}</span>}</span></>)}
+              {d.copies.map((c) => <Fragment key={c.root}><span key={c.root + "r"}>{c.root}</span><span key={c.root + "v"}>{c.lines} lines · {c.files} file{c.files === 1 ? "" : "s"}{c.updated && <span className="dt"> · {c.updated}</span>}</span></Fragment>)}
               <span className="w">differs</span><span>{(d.changed || []).join(", ")}{extra ? "; " + extra : ""}</span>
             </div>;
           })}
@@ -68,31 +69,6 @@ export function DriftPopover({ i, children, className }: { i: Install; children:
       </Popover.Positioner>
     </Popover.Portal>
   </Popover.Root>;
-}
-
-/* Inline rename: swaps the name for an input until Enter or Escape. */
-export function RenameInline({ i, onDone, className }: { i: Install; onDone: () => void; className?: string }) {
-  const rename = useGroups((g) => g.rename);
-  const ref = useRef<HTMLInputElement>(null);
-  const [v, setV] = useState(i.name);
-  useEffect(() => { ref.current?.focus(); ref.current?.select(); }, []);
-  function finish(save: boolean) { if (save && v.trim() && v.trim() !== i.name) { rename(i.id, v.trim()); toast.success("Named the group “" + v.trim() + "”. Kept in this browser only."); } onDone(); }
-  return <input ref={ref} className={"ren-in " + (className || "")} value={v} aria-label="Name this group" onChange={(e) => setV(e.target.value)}
-    onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") finish(true); if (e.key === "Escape") finish(false); }} onBlur={() => finish(false)} onClick={(e) => e.stopPropagation()} />;
-}
-
-/* The annotation cluster shown beside an Install's name: kind, guessed actions, drift. */
-export function Annotations({ i, onRename }: { i: Install; onRename: () => void }) {
-  const dismiss = useGroups((g) => g.dismiss), restore = useGroups((g) => g.restore);
-  const has = i.kind !== "loose" || i.renamed || i.drift;
-  if (!has) return null;
-  return <span className="ann" onClick={(e) => e.stopPropagation()}>
-    {i.kind === "recorded" && <span>recorded</span>}
-    {i.kind === "plugin" && <span>plugin</span>}
-    {i.kind === "inferred" && <><span className="g">guessed</span><button type="button" onClick={onRename}>name it</button><button type="button" onClick={() => { dismiss(i.id); toast.success("Not a group. " + i.skills.length + " skills are now Loose Skills.", { action: { label: "Undo", onClick: () => restore(i.id) } }); }}>not a group</button></>}
-    {i.renamed && <span>named by you</span>}
-    {i.drift && <DriftPopover i={i}>drift</DriftPopover>}
-  </span>;
 }
 
 export function IconBtn({ name, title, onClick, className }: { name: Parameters<typeof Icon>[0]["name"]; title: string; onClick?: () => void; className?: string }) {

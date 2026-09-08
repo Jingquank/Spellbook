@@ -1,6 +1,19 @@
 export type Mark = "claude-code" | "codex" | "gemini" | "cursor";
-export type Kind = "recorded" | "inferred" | "loose" | "plugin";
+export type Kind = "install" | "loose";
 export type Source = "project" | "device";
+
+export interface Origin {
+  kind: "github" | "plugin" | "pack" | "local" | "app" | "unknown";
+  grade: "recorded" | "matched" | "hinted" | "unknown";
+  name: string;
+  slug?: string;
+  url?: string;
+  path?: string;
+  ref?: string;
+  version?: string;
+  evidence: string[];
+  record?: string;
+}
 
 export interface DriftDetail {
   copies: { root: string; lines: number; files: number; updated?: string }[];
@@ -12,6 +25,9 @@ export interface Skill {
   id: string;
   name: string;
   description: string;
+  origin: Origin;
+  installedAt?: string;
+  updatedAt?: string;
   frontmatter: Record<string, string>;
   lines: number;
   bytes: number;
@@ -30,6 +46,7 @@ export interface Install {
   id: string;
   name: string;
   kind: Kind;
+  origin: Origin;
   source: Source;
   marks: Mark[];
   drift: boolean;
@@ -40,9 +57,6 @@ export interface Install {
   manifests?: string[];
   quiet?: boolean;
   skills: Skill[];
-  renamed?: boolean;
-  originalName?: string;
-  fromDismissed?: string;
 }
 
 export interface Root { path: string; exists: boolean; skills: number; note: string }
@@ -55,6 +69,7 @@ export interface Survey {
   agentName: string;
   installs: Install[];
   roots: Root[];
+  records: { path: string; kind: string; entries: number; read: boolean }[];
   port?: number;
 }
 

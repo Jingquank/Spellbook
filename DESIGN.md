@@ -20,24 +20,17 @@ lead with paths, tools that overwrite ambiguity.
 The tab is a two-page spread.
 
 - **Left page: the contents.** Every Install, grouped by Source ("From this project" first,
-  then "On this device"), with its skills as entries. One row model in both **Registers**; the
-  Register, chosen in Settings and kept in the browser, changes type, not behaviour:
-  - Chapter labels are 11 px uppercase with a hairline after them and the count at the end.
-  - A **section** (an Install) is a 32 px row: chevron, 20 px Group Thumbnail, name, one-word
-    annotations (a dashed "guessed" pill, a solid "named" pill, "recorded", "plugin", the word
-    "drift" in the warning colour), a dotted leader, and the skill count. Sections fold; the open
-    one follows the page being read. On hover or focus the leader gives way to the guessed group's
-    two actions, "name it" and "not a group"; at rest a row shows only the pill.
-  - An **entry** (a skill) is a 28 px row indented to the section name: name, leader, page number.
-    The selected entry sits on the selection surface; the current section on the grouped surface;
-    the keyboard cursor is a 2 px inset ring, distinct from selection.
-  - Rhythm: 2 px between sections, the entries block padded 2 px above and 6 px below, 22 px and a
-    hairline between chapters. The name wins the space; annotations never truncate it.
-  - **Prose** (the Grimoire look, the default) sets the rows in Schibsted Grotesk. **Mono** (the
-    Folio look) sets the same rows in Commit Mono at 13 px with 12 px glyph tiles and line counts
-    after each entry.
-  - A filter line sits at the foot of the page in both Registers, with the key hint beside it.
-    Sorting (book order, name, date, size) applies to the contents and to the page numbers alike.
+  then "On this device"), with its skills as entries. One voice: Schibsted Grotesk throughout.
+  - Chapter labels are 11 px uppercase with a hairline and a count.
+  - A section is a 32 px row: chevron, 20 px Group Thumbnail, name, Origin kind, optional
+    "drift", dotted leader and skill count. The first evidence sentence is the Origin word's
+    tooltip. A Hinted Origin says "probably …" on its Loose Skill.
+  - An entry is a 28 px row indented to the section name: name, leader, page number.
+    Selection, current section and the keyboard cursor remain separate states.
+  - Rhythm: 2 px between sections; entries padded 2 px above and 6 px below; 22 px between
+    chapters. Names take priority over Origin detail.
+  - Sections fold and follow the page being read. The filter sits at the foot with key hints.
+    Sorting (book order, name, date, size) applies to contents and page numbers alike.
 - **Right page: the Reader.** One skill at a time, with the Notes margin on its outer edge.
 - **Footer:** Previous, the page number ("page 12 of 38"), Settings, Next. Skills are pages 1 to N;
   Settings is page N+1.
@@ -51,12 +44,14 @@ The book is `min(1320px, 100%)` wide in Focused width and `min(1680px, 100%)` in
 - **Title bar** (40 px, plain): "Skill · SKILL.md", a Path copy control, a More menu. No material,
   no glass.
 - **Head**: crumb row (24 px Group Thumbnail, Install name, badges, Agent Marks), the skill name at
-  24 px bold, the frontmatter description at 15 px secondary, then a mono metadata row (path,
-  lines, files, updated).
+  24 px bold, the frontmatter description at 15 px secondary, then an inline 12 px metadata row (path,
+  lines, files, updated). The full Origin follows: kind, name, grade, slug or path, reference,
+  version, record and evidence sentences. Treatment A (inline metadata, quiet page numbers) was
+  selected on 2026-09-08.
 - **Tabs**: SKILL.md first, sibling Markdown files next, "Files" last. Files lists every file by
   name and kind; nothing but Markdown is ever rendered.
 - **Body**: Markdown at the reader body size (14, 15 or 16 px), line height 1.55, measure 68ch
-  (84ch in Wide). Frontmatter keys other than name and description appear as a mono block above
+  (84ch in Wide). Frontmatter keys other than name and description appear in the interface face above
   the body. Links do not navigate; they are shown.
 - **Notes margin** (232 px): three groups in a column with 14 px between them. The head carries
   "Notes · n" and the "Note on skill" action. Each Note is a block under a hairline: anchor line
@@ -87,15 +82,17 @@ The tab never writes to disk. See ADR 0002.
   for tiles and glyphs, rounded for crumbs and previews.
 - **Agent Marks**: 16 px official marks (22 px where prominent). A skill reachable from several
   agents is one Install wearing several marks.
-- **Recorded**: a neutral outlined badge. **Plugin**: badge with the version.
-- **Guessed** (Inferred Install): a dashed badge, and two actions revealed on hover or focus
-  wherever the Install is named: "name it" (inline rename, kept in the browser) and "not a group"
-  (its skills become Loose Skills; the confirming toast carries Undo, and Settings can restore).
+- **Recorded Origin**: established by a lockfile, plugin manifest, pack manifest or system root.
+- **Matched Origin**: established by agreeing local facts. It always says what matched.
+- **Hinted Origin**: displayed as "probably …" on a Loose Skill; it never forms an Install.
+- **Unknown Origin**: displayed as unknown on a Loose Skill.
+- Recorded and Matched Origins form Installs. There are no naming, dismissal or grouping controls.
 - **Drift**: the warning colour on one word, "drift", never a red banner. Clicking it opens a
   popover listing each drifted skill's copies (root, lines, files, date), the files that differ,
   and one action that sends a Brief asking the agent to reconcile. Every control that names the
   agent sends a Brief; none of them only explains.
-- **Empty Source**: the chapter stays, with one sentence saying what would appear there.
+- **Empty Source**: the chapter stays. An empty project names the project and its exact
+  `.claude/skills/` path, explaining that a folder with a SKILL.md would appear there.
 - **Fixture**: a grey badge; only in prototypes.
 
 ## Settings
@@ -103,17 +100,17 @@ The tab never writes to disk. See ADR 0002.
 The last spread of the book. Left page: a contents list of the sections with their current values.
 Right page: inset grouped rows, 44 px, label and explanation left, control right.
 
-Sections: Appearance (System · Light · Dark), Contents register (Grimoire · prose, Folio · mono),
-Reader (Width: Focused · Wide; Text size: 14 · 15 · 16), Connection (opened by, delivery, fallback),
-Roots (every scanned root with counts and a note, plus "Ask <agent> to rescan"), Groups (names and
-dismissals with restore), Keys. Everything here lives in the browser for this device.
+Sections: Appearance (System · Light · Dark), Reader (Width: Focused · Wide; Text size: 14 · 15 · 16),
+Connection (opened by, delivery, fallback), Roots (every scanned root with counts and a note,
+plus Rescan), Records (lockfiles and manifests, their entry counts and read status), Keys.
+Only Appearance and Reader choices persist in the browser. Roots and Records come from the Survey.
 
 ## Type
 
 - **Interface**: Schibsted Grotesk. 11 px micro labels (uppercase, 0.06 to 0.08em tracking),
   12 px metadata, 14 px rows and controls, 15 px section titles, 22 to 24 px titles.
-- **Code and paths**: Commit Mono, ligatures off. 12 px metadata, 13 px body. The Mono register
-  is set entirely in it at 13 px on a 21 px line.
+- **Rendered code and Brief preview**: Commit Mono, ligatures off. All interface paths, file
+  lists, keys, metadata, counts and page numbers use Schibsted Grotesk with tabular figures.
 - **Reader prose**: 15 px default, 1.55 line height, 68ch measure.
 
 Hierarchy comes from weight and spacing. No display type inside the shell.
@@ -160,10 +157,10 @@ stay, slides and scales go. Nothing else animates.
 
 ## Keyboard
 
-Both registers, identically: ← → turn pages; j k (or ↑ ↓) move the cursor over sections and
+Throughout the book: ← → turn pages; j k (or ↑ ↓) move the cursor over sections and
 entries; Enter opens an entry or folds a section; h and l fold and unfold; z folds or unfolds all;
 / focuses the filter; s cycles the sort (book order, name, date, size) for contents and pages
-alike; r names a guessed group and x says it is not one; Escape leaves Settings or clears the
+alike; Escape leaves Settings or clears the
 filter. In the Reader, ← → on the tab list move between files.
 
 ## Icons and artwork
@@ -175,7 +172,7 @@ deterministic: the same Install always draws the same tile.
 ## Accessibility
 
 Full keyboard operation, visible focus (2 px interaction-colour outline), WCAG AA contrast in every
-palette, state never encoded by colour alone (drift is a word, guessed is a dashed shape), reduced
+palette, state never encoded by colour alone (Drift and Origin grades are written out), reduced
 motion respected, prose measure kept under 84ch.
 
 ## What Spellbook does not do

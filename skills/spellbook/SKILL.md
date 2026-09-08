@@ -3,7 +3,7 @@ name: spellbook
 description: Open Spellbook, a browser tab that shows every skill Install in this project and on this device as one book, lets the user read a skill, leave Notes and send you a Brief. Use when the user types /spellbook, asks what skills are installed, or wants to review or edit a skill with you.
 user-invocable: true
 disable-model-invocation: true
-argument-hint: [start | wait-brief | rescan | stop]
+argument-hint: [start | wait-brief | status | rescan | stop]
 ---
 
 # Spellbook
@@ -40,14 +40,17 @@ Loop `wait-brief` until the user says they are done.
 ## Rules
 
 - Never write to a skill folder except in response to a Brief, and only the change it asks for.
-- An Inferred Install ("Installed together, 1 Aug") is a guess. Say so if you refer to it.
+- An Origin marked probably is a hint from the skill's own text; say so if you rely on it.
 - Drift is a state, not an error: the same skill differs between agent roots. Report it; do not
   reconcile it unless a Brief asks.
-- The user may name or dismiss a guessed group in the tab; that lives in their browser, not on
-  disk. Do not "fix" it.
 
 ## Other commands
 
 - `status`: is the server running for this project, and where.
+- `status --all`: list every live project server, URL, pid and connected tab count.
 - `rescan`: re-read the roots after you add or remove a skill.
 - `stop`: shut the server down when the user is finished.
+- `stop --all`: shut down every live Spellbook server.
+
+Each project uses a stable port. Starting again with a connected tab prints its URL without
+opening another tab. The server exits after 30 minutes with no connected tab or waiting agent.

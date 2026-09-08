@@ -11,7 +11,7 @@ import { noteKey, useNotes, useSurvey, useUI } from "../store";
 import type { Install, Note, Skill } from "../types";
 import { Icon } from "../icons";
 import { Thumb } from "../thumbs";
-import { Badges, Marks } from "./InstallBits";
+import { Badges, Marks, OriginLine } from "./InstallBits";
 
 /* Sibling files are fetched on demand and re-fetched when the server says they changed. */
 interface Files { versions: Record<string, number>; bump: (key: string) => void }
@@ -181,8 +181,9 @@ export function Reader({ install, skill, mode }: { install: Install; skill: Skil
         <h1 className="rd-title">{skill.name}</h1>
         {skill.description && <p className="rd-desc">{skill.description}</p>}
         <div className="rd-meta"><span><b>{skill.path}/{tab}</b></span><span>{skill.lines} lines</span><span>{skill.files.length} file{skill.files.length === 1 ? "" : "s"}</span><span>updated {skill.date}</span></div>
+        <OriginLine origin={skill.origin || install.origin} />
       </div>
-      <div className="rd-tabs" role="tablist" onKeyDown={(e) => { const tabs = ["SKILL.md", ...siblings, "Files"]; const k = tabs.indexOf(tab); if (e.key === "ArrowRight") { e.preventDefault(); setTab(tabs[(k + 1) % tabs.length]); } if (e.key === "ArrowLeft") { e.preventDefault(); setTab(tabs[(k - 1 + tabs.length) % tabs.length]); } }}>
+      <div className="rd-tabs" role="tablist" onKeyDown={(e) => { const tabs = ["SKILL.md", ...siblings, "Files"]; const k = tabs.indexOf(tab); if (e.key === "ArrowRight") { e.preventDefault(); e.stopPropagation(); setTab(tabs[(k + 1) % tabs.length]); e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[(k + 1) % tabs.length]?.focus(); } if (e.key === "ArrowLeft") { e.preventDefault(); e.stopPropagation(); setTab(tabs[(k - 1 + tabs.length) % tabs.length]); e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[(k - 1 + tabs.length) % tabs.length]?.focus(); } }}>
         {["SKILL.md", ...siblings, "Files"].map((t) => <button key={t} type="button" role="tab" id={"tab-" + t} aria-controls="rd-panel" className="rd-tab" aria-selected={t === tab} tabIndex={t === tab ? 0 : -1} onClick={() => setTab(t)}>{t}{t === "Files" && <span className="c">{skill.files.length}</span>}</button>)}
       </div>
       <div className="rd-split">
@@ -221,7 +222,7 @@ function NoteView({ n, noteKey: key }: { n: Note; noteKey: string }) {
   return <div className={"rd-note " + n.state + (st.active === n.id ? " is-active" : "")} onClick={(e) => { if ((e.target as HTMLElement).closest("button, textarea")) return; activate(); }}>
     <div className="q">{n.quote ? <>{n.line && <span className="ln">L{n.line}</span>}{n.quote}</> : <><span className="ln">skill</span>whole skill</>}</div>
     {n.editing ? <><textarea ref={ref} placeholder="What should change?" rows={3} defaultValue={n.text}
-      onKeyDown={(e) => { const v = (e.target as HTMLTextAreaElement).value.trim(); if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!v) st.remove(key, n.id); else st.update(key, n.id, { text: v, editing: false }); } if (e.key === "Escape") { e.preventDefault(); st.remove(key, n.id); } }} /><div className="ta-hint">Enter to keep · Esc to discard</div></>
+      onKeyDown={(e) => { const v = (e.target as HTMLTextAreaElement).value.trim(); if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!v) st.remove(key, n.id); else st.update(key, n.id, { text: v, editing: false }); } if (e.key === "Escape") { e.preventDefault(); if (n.text) st.update(key, n.id, { editing: false }); else st.remove(key, n.id); } }} /><div className="ta-hint">Enter to keep · Esc to cancel</div></>
       : <div className="t">{n.text}</div>}
     {!n.editing && <div className="s"><span className="chip">{n.state === "sent" ? "Sent " + n.sentAt : "Draft"}</span>
       {n.state === "draft" && <><button type="button" onClick={() => st.update(key, n.id, { editing: true })}>Edit</button><button type="button" onClick={() => st.remove(key, n.id)}>Remove</button></>}</div>}

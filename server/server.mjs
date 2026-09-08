@@ -21,7 +21,9 @@ const HOME = os.homedir();
 function arg(name, def) { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : def; }
 const project = path.resolve(arg("--project", process.cwd()));
 const agent = arg("--agent", process.env.CLAUDECODE ? "claude-code" : process.env.CODEX_HOME || process.env.CODEX_SANDBOX ? "codex" : "claude-code");
-const wantPort = Number(arg("--port", 0));
+const wantPort = Number(arg("--port", 40000 + parseInt(crypto.createHash("sha1").update(project).digest("hex").slice(0, 8), 16) % 10000));
+const idleMs = Number(arg("--idle", 30)) * 60000;
+if (!Number.isFinite(idleMs) || idleMs <= 0) throw new Error("--idle must be a positive number of minutes");
 const noOpen = process.argv.includes("--no-open");
 
 export function stateFile(projectPath) {
@@ -37,6 +39,9 @@ const clients = new Set();          // SSE responses
 const briefs = [];                  // { id, at, delivered, ... }
 const waiters = [];                 // long-poll responses from wait-brief
 let briefLog = null;
+let idleSince = Date.now();
+function activityChanged() { idleSince = clients.size || waiters.length ? null : Date.now(); }
+setInterval(() => { if (idleSince !== null && Date.now() - idleSince >= idleMs) process.exit(0); }, 1000).unref();
 
 function send(res, code, body, type = "application/json; charset=utf-8", extra = {}) {
   const data = typeof body === "string" || Buffer.isBuffer(body) ? body : JSON.stringify(body);
@@ -61,8 +66,50 @@ async function rescan() {
 
 // ---- file watching: a change inside a skill folder tells the tab to reload that file.
 const watchers = new Map();
+const discoveryWatchers = new Map();
+let discoveryTimer;
+let scanning = false, scanAgain = false;
+function scheduleDiscovery() {
+  clearTimeout(discoveryTimer);
+  discoveryTimer = setTimeout(async () => {
+    if (scanning) { scanAgain = true; return; }
+    scanning = true;
+    try { await rescan(); } catch (error) { console.error("Rescan failed:", error.message); }
+    finally { scanning = false; if (scanAgain) { scanAgain = false; scheduleDiscovery(); } }
+  }, 500);
+}
+function watchDiscovery() {
+  const needed = new Set();
+  for (const root of survey.roots) {
+    const dir = root.path.replace(/^~/, HOME);
+    if (root.note.includes("plugins with skills")) continue;
+    // Watch the nearest existing parent as well, so a missing skill root can appear.
+    let parent = dir;
+    while (!fs.existsSync(parent) && path.dirname(parent) !== parent) parent = path.dirname(parent);
+    needed.add(parent);
+    if (parent === dir) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory() && !entry.name.startsWith(".")) needed.add(path.join(dir, entry.name));
+      }
+    }
+  }
+  for (const [dir, watcher] of discoveryWatchers) if (!needed.has(dir)) { watcher.close(); discoveryWatchers.delete(dir); }
+  for (const dir of needed) {
+    if (discoveryWatchers.has(dir)) continue;
+    try {
+      const watcher = fs.watch(dir, (event, name) => {
+        if (!name) return;
+        // Known file edits use flushChanges; topology changes need a new Survey.
+        if (event === "rename" || String(name) === "SKILL.md") scheduleDiscovery();
+      });
+      watcher.on("error", () => { watcher.close(); discoveryWatchers.delete(dir); scheduleDiscovery(); });
+      discoveryWatchers.set(dir, watcher);
+    } catch { /* Root may disappear between discovery and watch registration. */ }
+  }
+}
 let pending = new Map();
 function watchRoots() {
+  watchDiscovery();
   const roots = new Set();
   for (const i of survey.installs) for (const s of i.skills) { roots.add(path.dirname(s.real)); }
   for (const r of roots) {
@@ -97,13 +144,14 @@ function pushBrief(body) {
   briefs.push(brief);
   if (briefLog) fs.appendFileSync(briefLog, JSON.stringify(brief) + "\n");
   const w = waiters.shift();
+  activityChanged();
   if (w) { brief.delivered = true; send(w, 200, brief); broadcast("brief-taken", { id, at: new Date().toISOString() }); }
   return brief;
 }
 
 async function handleApi(req, res, url) {
   const p = url.pathname;
-  if (p === "/api/health") return send(res, 200, { ok: true, agent, project: survey.projectPath, port: survey.port, pid: process.pid });
+  if (p === "/api/health") return send(res, 200, { ok: true, agent, project: survey.projectPath, port: survey.port, pid: process.pid, clients: clients.size, waiters: waiters.length });
   if (p === "/api/survey") return send(res, 200, survey);
   if (p === "/api/rescan" && req.method === "POST") { await rescan(); return send(res, 200, { scanned: survey.scanned }); }
   if (p === "/api/file") {
@@ -128,16 +176,18 @@ async function handleApi(req, res, url) {
     if (next) { next.delivered = true; broadcast("brief-taken", { id: next.id, at: new Date().toISOString() }); return send(res, 200, next); }
     if (url.searchParams.get("wait") !== "1") return send(res, 204, "");
     waiters.push(res);
-    const t = setTimeout(() => { const k = waiters.indexOf(res); if (k > -1) { waiters.splice(k, 1); send(res, 204, ""); } }, 25000);
-    req.on("close", () => { clearTimeout(t); const k = waiters.indexOf(res); if (k > -1) waiters.splice(k, 1); });
+    activityChanged();
+    const t = setTimeout(() => { const k = waiters.indexOf(res); if (k > -1) { waiters.splice(k, 1); activityChanged(); send(res, 204, ""); } }, 25000);
+    req.on("close", () => { clearTimeout(t); const k = waiters.indexOf(res); if (k > -1) { waiters.splice(k, 1); activityChanged(); } });
     return;
   }
   if (p === "/api/events") {
     res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-store", connection: "keep-alive" });
     res.write("event: hello\ndata: " + JSON.stringify({ agent, agentName: AGENTS[agent] || agent, port: survey.port, scanned: survey.scanned }) + "\n\n");
     clients.add(res);
+    activityChanged();
     const ping = setInterval(() => { try { res.write(": ping\n\n"); } catch { } }, 20000);
-    req.on("close", () => { clearInterval(ping); clients.delete(res); });
+    req.on("close", () => { clearInterval(ping); clients.delete(res); activityChanged(); });
     return;
   }
   if (p === "/api/shutdown" && req.method === "POST") { send(res, 200, { bye: true }); setTimeout(() => process.exit(0), 50); return; }
@@ -167,7 +217,12 @@ const server = http.createServer(async (req, res) => {
   } catch (e) { send(res, 500, { error: String(e && e.message || e) }); }
 });
 
-server.listen(wantPort, "127.0.0.1", async () => {
+let listenPort = wantPort, attempts = 0;
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE" && ++attempts < 20) { server.listen(++listenPort, "127.0.0.1"); return; }
+  console.error(error.message); process.exit(1);
+});
+server.on("listening", async () => {
   const port = server.address().port;
   const url = "http://127.0.0.1:" + port + "/";
   const state = stateFile(project);
@@ -182,3 +237,5 @@ server.listen(wantPort, "127.0.0.1", async () => {
     try { spawn(cmd[0], cmd.slice(1), { stdio: "ignore", detached: true }).unref(); } catch { }
   }
 });
+
+server.listen(listenPort, "127.0.0.1");

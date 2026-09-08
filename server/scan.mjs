@@ -1,5 +1,5 @@
 // Spellbook scanner. Enumerates skill roots for a project and the device, resolves
-// Installs (Recorded, Inferred, Loose), Agent Marks and Drift, and returns the Survey.
+// Installs by Origin evidence, Agent Marks and Drift, and returns the Survey.
 // Node 20+, no dependencies. Run directly to print JSON:  node server/scan.mjs [--project DIR]
 import fs from "node:fs";
 import fsp from "node:fs/promises";
@@ -100,36 +100,62 @@ async function skillsInRoot(root) {
   return out;
 }
 
-async function pluginInstalls() {
-  const manifest = path.join(HOME, ".claude", "plugins", "installed_plugins.json");
-  let data; try { data = JSON.parse(await fsp.readFile(manifest, "utf8")); } catch { return []; }
-  const out = [];
-  for (const [key, entries] of Object.entries(data.plugins || {})) {
-    const e = Array.isArray(entries) ? entries[0] : entries; if (!e || !e.installPath) continue;
-    const name = key.split("@")[0];
-    const skills = [];
-    async function find(d, depth) {
-      if (depth > 4) return;
-      let ents; try { ents = await fsp.readdir(d, { withFileTypes: true }); } catch { return; }
-      for (const x of ents) {
-        if (x.name.startsWith(".") || x.name === "node_modules") continue;
-        const p = path.join(d, x.name);
-        if (x.isDirectory()) { if (await exists(path.join(p, "SKILL.md"))) { const s = await readSkill(p, { path: e.installPath, marks: ["claude-code"] }); if (s) skills.push(s); } else await find(p, depth + 1); }
-      }
-    }
-    await find(path.join(e.installPath, "skills"), 0);
-    if (!skills.length) continue;
-    out.push({
-      id: "plugin-" + name, name, kind: "plugin", source: "device", marks: ["claude-code"], drift: false,
-      date: (e.installedAt || "").slice(0, 10) || skills[0].date, updated: (e.lastUpdated || "").slice(0, 10) || undefined,
-      version: String(e.version || "").slice(0, 12), manifest: tilde(manifest), skills
-    });
+// Keep the record inventory even when a present record cannot be decoded.
+async function readRecord(file, kind, records, count, optional = false) {
+  if (optional && !(await exists(file))) return null;
+  let data;
+  try { data = JSON.parse(await fsp.readFile(file, "utf8")); } catch {
+    records.push({ path: tilde(file), kind, entries: 0, read: false });
+    return null;
   }
-  return out;
+  records.push({ path: tilde(file), kind, entries: count(data), read: true });
+  return data;
 }
 
-async function benchManifest(rootPath) {
-  try { const j = JSON.parse(await fsp.readFile(path.join(rootPath, ".bench-install.json"), "utf8")); return j && j.skills ? { skills: Object.keys(j.skills), version: j.version } : null; } catch { return null; }
+function githubSlug(url = "") {
+  return /github\.com[:/]([^/\s]+\/[^/#?\s]+?)(?:\.git)?(?:[/#?]|$)/i.exec(url)?.[1];
+}
+function dateFromRecord(skill, record) {
+  for (const [key, display] of [["installedAt", "installedDay"], ["updatedAt", "date"]]) {
+    if (record[key] && Number.isFinite(Date.parse(record[key]))) {
+      skill[key] = record[key]; skill[display] = record[key].slice(0, 10);
+    }
+  }
+}
+async function pluginSkills(records) {
+  const manifest = path.join(HOME, ".claude", "plugins", "installed_plugins.json");
+  const data = await readRecord(manifest, "plugin manifest", records, (d) => Object.keys(d.plugins || {}).length);
+  const marketplaces = await readRecord(path.join(HOME, ".claude", "plugins", "known_marketplaces.json"), "plugin marketplaces", records, (d) => Object.keys(d).length);
+  const out = [];
+  for (const [key, entries] of Object.entries(data?.plugins || {})) {
+    const name = key.split("@")[0], marketplace = key.slice(name.length + 1);
+    const slug = marketplaces?.[marketplace]?.source?.repo;
+    for (const entry of Array.isArray(entries) ? entries : [entries]) {
+      if (!entry?.installPath) continue;
+      const origin = {
+        kind: "plugin", grade: "recorded", name, slug,
+        url: slug ? "https://github.com/" + slug : undefined,
+        path: "plugins/" + name, ref: entry.gitCommitSha, version: entry.version,
+        record: tilde(manifest), evidence: ["recorded by the plugin manifest: " + key]
+      };
+      async function find(dir, depth) {
+        if (depth > 4) return;
+        if (await exists(path.join(dir, "SKILL.md"))) {
+          const skill = await readSkill(dir, { path: entry.installPath, marks: ["claude-code"] });
+          if (skill) {
+            dateFromRecord(skill, { installedAt: entry.installedAt, updatedAt: entry.lastUpdated });
+            out.push({ ...skill, origin });
+          }
+          return;
+        }
+        for (const file of await fsp.readdir(dir, { withFileTypes: true }).catch(() => [])) {
+          if (file.isDirectory() && !file.name.startsWith(".") && file.name !== "node_modules") await find(path.join(dir, file.name), depth + 1);
+        }
+      }
+      await find(path.join(entry.installPath, "skills"), 0);
+    }
+  }
+  return out;
 }
 
 // Same skill id seen from several roots: collapse identical copies, record Drift otherwise.
@@ -160,73 +186,300 @@ function mergeCopies(copies) {
   return s;
 }
 
-function clusterInferred(skills, source) {
-  // One install action writes into one root on one day; cluster by both.
-  const byKey = new Map();
-  for (const s of skills) { const k = (s.rootDir || "") + "|" + s.installedDay; const g = byKey.get(k) || []; g.push(s); byKey.set(k, g); }
-  const installs = [];
-  for (const [key, group] of byKey) {
-    const day = key.split("|")[1];
-    if (group.length >= 2) {
-      const d = new Date(day + "T12:00:00");
-      const label = "Installed together, " + d.getDate() + " " + d.toLocaleString("en", { month: "short" });
-      installs.push({ id: "inf-" + day + "-" + crypto.createHash("sha1").update(key).digest("hex").slice(0, 4), name: label, kind: "inferred", source, marks: union(group), drift: group.some((s) => s.drift), date: day, skills: group.sort(byName) });
-    } else for (const s of group) installs.push(looseInstall(s, source));
-  }
-  return installs;
+function looseInstall(s, source) {
+  return { id: "loose-" + s.id, name: s.name, kind: "loose", source, origin: s.origin,
+    marks: s.marks, drift: !!s.drift, date: s.date, skills: [s] };
 }
-function looseInstall(s, source) { return { id: "loose-" + s.id, name: s.name, kind: "loose", source, marks: s.marks, drift: !!s.drift, date: s.date, skills: [s] }; }
 function union(skills) { const m = new Set(); skills.forEach((s) => s.marks.forEach((x) => m.add(x))); return [...m].sort(); }
 const byName = (a, b) => a.name.localeCompare(b.name);
-const byInstall = (a, b) => a.name.localeCompare(b.name);
+function originKey(origin) { return origin.kind + "|" + (origin.slug || origin.url || origin.name) + (origin.kind === "plugin" ? "|" + origin.path : ""); }
+function groupOrigins(skills, source) {
+  const groups = new Map(), installs = [];
+  for (const skill of skills) {
+    if (!["recorded", "matched"].includes(skill.origin.grade)) { installs.push(looseInstall(skill, source)); continue; }
+    const key = originKey(skill.origin);
+    const group = groups.get(key) || []; group.push(skill); groups.set(key, group);
+  }
+  for (const [key, skills] of groups) {
+    skills.sort(byName);
+    const representative = skills.find((s) => s.origin.grade === "recorded") || skills[0];
+    const origin = { ...representative.origin, evidence: [...new Set(skills.flatMap((s) => s.origin.evidence))] };
+    // A folder hash and skillPath describe one skill, not every member of its Install.
+    for (const field of ["path", "ref"]) if (skills.some((s) => s.origin[field] !== origin[field])) delete origin[field];
+    installs.push({ id: "orig-" + crypto.createHash("sha1").update(key).digest("hex").slice(0, 8),
+      name: skills.length === 1 ? skills[0].name : origin.name, kind: "install", source, origin,
+      marks: union(skills), drift: skills.some((s) => s.drift), date: skills.map((s) => s.installedDay || s.date).sort()[0],
+      updated: skills.map((s) => s.date).sort().at(-1), version: origin.version,
+      quiet: skills.every((s) => s.system), skills });
+  }
+  return installs.sort(byName);
+}
 
-async function resolveSource(roots, source) {
-  const seen = new Map(); // skill id -> copies
-  const recorded = [];
-  const rootSummaries = [];
+async function collectSource(roots, source, records, lock) {
+  const seen = new Map(), summaries = [];
   for (const root of roots) {
-    if (root.system) {
-      const sys = await skillsInRoot(root);
-      rootSummaries.push({ path: tilde(root.path), exists: sys.length > 0, skills: sys.length, note: root.note });
-      if (sys.length) recorded.push({ id: "codex-system", name: "Codex system skills", kind: "recorded", source, marks: ["codex"], drift: false, date: sys[0].date, manifest: tilde(root.path), quiet: true, skills: sys.map((s) => mergeCopies([{ ...s, shared: false }])).sort(byName) });
+    const skills = await skillsInRoot(root);
+    summaries.push({ path: tilde(root.path), exists: await exists(root.path), skills: skills.length, note: root.note });
+    const manifest = path.join(root.path, ".bench-install.json");
+    const bench = await readRecord(manifest, "pack manifest", records, (d) => Object.keys(d.skills || {}).length, true);
+    for (const skill of skills) {
+      // The CLI installs into several agent roots. Resolve only skills on disk;
+      // plugin entries and a different project never inherit a device lock entry.
+      const entry = source === "device" && !root.system ? lock?.skills?.[skill.id] : null;
+      if (entry?.source) {
+        skill.origin = { kind: "github", grade: "recorded", name: entry.source, slug: entry.source,
+          url: entry.sourceUrl || "https://github.com/" + entry.source,
+          path: entry.skillPath ? path.posix.dirname(entry.skillPath) : undefined, ref: entry.skillFolderHash,
+          record: tilde(path.join(HOME, ".agents", ".skill-lock.json")), evidence: ["recorded by the Agent Skills CLI lockfile"] };
+        dateFromRecord(skill, entry);
+      } else if (bench?.skills && Object.hasOwn(bench.skills, skill.id)) {
+        skill.origin = { kind: "pack", grade: "recorded", name: "Bench", version: bench.version,
+          record: tilde(manifest), evidence: ["recorded by the Bench pack manifest " + tilde(manifest)] };
+      } else if (root.system) {
+        skill.system = true;
+        skill.origin = { kind: "github", grade: "recorded", name: "Codex system skills", slug: "openai/skills",
+          url: "https://github.com/openai/skills", path: "skills/.system/" + skill.id,
+          evidence: ["recorded by the Codex system root " + tilde(root.path)] };
+      }
+      const copies = seen.get(skill.id) || [];
+      copies.push({ ...skill, shared: !!root.shared }); seen.set(skill.id, copies);
+    }
+  }
+  const skills = [...seen.values()].map((copies) => {
+    const skill = mergeCopies(copies);
+    // Resolver order wins even if mergeCopies prefers a different root for reading.
+    const resolved = copies.filter((c) => c.origin).sort((a, b) =>
+      ["github", "plugin", "pack"].indexOf(a.origin.kind) - ["github", "plugin", "pack"].indexOf(b.origin.kind))[0];
+    if (resolved) {
+      skill.origin = { ...resolved.origin, evidence: [...new Set(copies.filter((c) => c.origin && originKey(c.origin) === originKey(resolved.origin)).flatMap((c) => c.origin.evidence))] };
+      dateFromRecord(skill, resolved);
+    }
+    return skill;
+  });
+  return { source, skills, roots: summaries };
+}
+
+// No subprocesses: support both .git directories and linked working copies.
+async function readRepository(repo) {
+  repo = await realpath(repo);
+  let gitDir = path.join(repo, ".git");
+  try {
+    if (!(await fsp.stat(gitDir)).isDirectory()) {
+      const gitFile = await fsp.readFile(gitDir, "utf8");
+      const target = /^gitdir:\s*(.+)$/m.exec(gitFile)?.[1];
+      if (!target) return null;
+      gitDir = path.resolve(repo, target.trim());
+    }
+    const common = await fsp.readFile(path.join(gitDir, "commondir"), "utf8").catch(() => "");
+    const config = await fsp.readFile(path.join(common ? path.resolve(gitDir, common.trim()) : gitDir, "config"), "utf8").catch(() => "");
+    const remote = /\[remote\s+"origin"\]([^\[]*)/.exec(config)?.[1];
+    const url = /^\s*url\s*=\s*(.+)$/m.exec(remote || "")?.[1]?.trim();
+    return { dir: repo, name: path.basename(repo), remote: url, slug: githubSlug(url) };
+  } catch { return null; }
+}
+async function enclosingRepository(dir, cache) {
+  if (cache.has(dir)) return cache.get(dir);
+  const repo = await readRepository(dir);
+  const result = repo || (path.dirname(dir) !== dir ? await enclosingRepository(path.dirname(dir), cache) : null);
+  cache.set(dir, result); return result;
+}
+const skillRootPath = /(?:^|[/\\])\.(?:agents|claude|codex|gemini|cursor)[/\\]skills(?:[/\\]|$)/;
+async function repositoryMatches(repos, skills) {
+  const matches = new Map(skills.map((s) => [s, []]));
+  for (const repo of repos) {
+    const pending = new Set(skills.filter((s) => s.description));
+    async function walk(dir) {
+      if (!pending.size || skillRootPath.test(dir)) return;
+      for (const entry of await fsp.readdir(dir, { withFileTypes: true }).catch(() => [])) {
+        if (["node_modules", ".git", "dist"].includes(entry.name)) continue;
+        const file = path.join(dir, entry.name);
+        if (skillRootPath.test(file)) continue;
+        if (entry.isDirectory()) {
+          // Nested working copies are separate candidates, never evidence for their parent.
+          if (await exists(path.join(file, ".git"))) continue;
+          await walk(file);
+        } else if (entry.isFile() && isTextFile(entry.name)) {
+          const stat = await fsp.stat(file).catch(() => null);
+          if (!stat || stat.size > 2 * 1024 * 1024) continue;
+          const text = await fsp.readFile(file, "utf8").catch(() => "");
+          if (text.includes("\0")) continue;
+          for (const skill of pending) if (text.includes(skill.description)) {
+            matches.get(skill).push({ repo, file: path.relative(repo.dir, file) }); pending.delete(skill);
+          }
+        }
+      }
+    }
+    await walk(repo.dir);
+  }
+  return matches;
+}
+function localOrigin(repo, evidence) {
+  return { kind: "local", grade: "matched", name: repo.name, url: tilde(repo.dir), slug: repo.slug,
+    evidence: [evidence, ...(repo.remote ? ["repository remote is " + repo.remote] : [])] };
+}
+async function packageInfo(file) {
+  const match = /^(.*[/\\]lib[/\\]node_modules[/\\](?:@[^/\\]+[/\\])?[^/\\]+)(?:[/\\]|$)/.exec(file);
+  if (!match) return null;
+  const manifest = path.join(match[1], "package.json");
+  try { const pkg = JSON.parse(await fsp.readFile(manifest, "utf8")); return { ...pkg, manifest }; } catch { return null; }
+}
+async function cliEvidence(skill, cache) {
+  // Only commands actually named in the skill are considered; never execute them.
+  const snippets = [...skill.md.matchAll(/`([^`]+)`/g)].map((m) => m[1]);
+  const names = [...new Set(snippets.flatMap((snippet) => snippet.split(/\r?\n/).map((line) =>
+    /^\s*(?:\$\s+)?([a-z][a-z0-9-]{1,60})(?:\s+|$)/.exec(line)?.[1]).filter(Boolean)))];
+  // A command explicitly shipped under a skill path is not the unrelated PATH binary.
+  const localCommands = new Set([...skill.md.matchAll(/[/\\]scripts[/\\]([a-z][a-z0-9-]*)/g)].map((m) => m[1]));
+  const found = new Map();
+  for (const name of names) {
+    if (localCommands.has(name)) continue;
+    if (!cache.has(name)) {
+      let pkg = null;
+      for (const bin of (process.env.PATH || "").split(path.delimiter).filter(Boolean)) {
+        const file = path.join(bin, name);
+        try {
+          await fsp.access(file, fs.constants.X_OK);
+          if (!(await fsp.stat(file)).isFile()) continue;
+          pkg = await packageInfo(await realpath(file)); break;
+        } catch { /* command is not in this PATH directory */ }
+      }
+      cache.set(name, pkg);
+    }
+    const pkg = cache.get(name);
+    if (pkg?.repository) found.set(pkg.name, { ...pkg, command: name });
+  }
+  return [...found.values()];
+}
+async function packageCaches() {
+  const found = new Map();
+  const root = path.join(HOME, ".npm", "_npx");
+  for (const cache of await fsp.readdir(root, { withFileTypes: true }).catch(() => [])) {
+    if (!cache.isDirectory()) continue;
+    const modules = path.join(root, cache.name, "node_modules");
+    async function inspect(dir, scoped = false) {
+      for (const entry of await fsp.readdir(dir, { withFileTypes: true }).catch(() => [])) {
+        if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
+        const folder = path.join(dir, entry.name);
+        if (!scoped && entry.name.startsWith("@")) { await inspect(folder, true); continue; }
+        try {
+          const pkg = JSON.parse(await fsp.readFile(path.join(folder, "package.json"), "utf8"));
+          const items = found.get(pkg.name) || []; items.push(pkg); found.set(pkg.name, items);
+        } catch { /* incomplete cache */ }
+      }
+    }
+    await inspect(modules);
+  }
+  return found;
+}
+function packageUrl(pkg) { return typeof pkg.repository === "string" ? pkg.repository : pkg.repository?.url; }
+async function resolveOrigins(skills) {
+  const repoCache = new Map(), repositories = new Map();
+  for (const skill of skills) {
+    const repo = await enclosingRepository(skill.real, repoCache);
+    if (repo) {
+      repositories.set(repo.dir, repo);
+      if (!skill.origin) skill.origin = localOrigin(repo, "matched " + tilde(skill.dir) + " to " + tilde(repo.dir) + (skill.dir !== skill.real ? " by symlink" : " by its repository location"));
+    }
+  }
+  const parents = new Set([path.join(HOME, "Code"), path.join(HOME, "Developer"), ...[...repositories.keys()].map((dir) => path.dirname(dir))]);
+  for (const parent of parents) for (const entry of await fsp.readdir(parent, { withFileTypes: true }).catch(() => [])) {
+    if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
+    const dir = path.join(parent, entry.name), repo = await readRepository(dir);
+    if (repo) repositories.set(repo.dir, repo);
+  }
+  // Bench keeps its Recorded grade; the text match adds the otherwise absent repository.
+  const unresolved = skills.filter((s) => !s.origin || s.origin.kind === "pack");
+  const matches = await repositoryMatches([...repositories.values()].sort((a, b) => a.dir.localeCompare(b.dir)), unresolved);
+  const commands = new Map();
+  let caches;
+  for (const skill of skills) {
+    const hits = (matches.get(skill) || []).filter((hit) => hit.repo.remote);
+    // Ambiguous text matches never choose an arbitrary repository.
+    const hit = hits.length === 1 ? hits[0] : null;
+    if (hit) {
+      const evidence = "matched " + tilde(hit.repo.dir) + ": description of " + skill.id + " found in " + hit.file;
+      if (skill.origin?.kind === "pack") {
+        skill.origin = { ...skill.origin, slug: hit.repo.slug, url: tilde(hit.repo.dir), evidence: [...skill.origin.evidence, evidence, "repository remote is " + hit.repo.remote] };
+      } else skill.origin = localOrigin(hit.repo, evidence);
+    }
+    if (!skill.origin || skill.origin.grade === "matched") for (const pkg of await cliEvidence(skill, commands)) {
+      const url = packageUrl(pkg), slug = githubSlug(url);
+      if (!slug) continue;
+      const evidence = "command " + pkg.command + " on PATH resolves to " + pkg.name + "@" + pkg.version + " (" + tilde(pkg.manifest) + ")";
+      if (skill.origin) {
+        if (skill.origin.slug === slug) skill.origin.evidence.push(evidence);
+      } else {
+        caches ||= await packageCaches();
+        const corroboration = (caches.get(pkg.name) || []).find((cached) => githubSlug(packageUrl(cached)) === slug);
+        skill.origin = { kind: "github", grade: corroboration ? "matched" : "hinted", name: slug, slug,
+          url: "https://github.com/" + slug, version: pkg.version, evidence: [evidence,
+            ...(corroboration ? ["npm package cache also records " + pkg.name + " with repository " + slug] : [])] };
+      }
+    }
+    if (skill.origin && ["recorded", "matched"].includes(skill.origin.grade)) {
+      if (!skill.origin.version && skill.frontmatter.version) skill.origin.version = skill.frontmatter.version;
       continue;
     }
-    const skills = await skillsInRoot(root);
-    rootSummaries.push({ path: tilde(root.path), exists: await exists(root.path), skills: skills.length, note: root.note });
-    for (const s of skills) { const g = seen.get(s.id) || []; g.push({ ...s, shared: !!root.shared }); seen.set(s.id, g); }
-    const bench = await benchManifest(root.path);
-    if (bench) recorded.push({ manifestRoot: root.path, bench });
+    const readme = await fsp.readFile(path.join(skill.dir, "README.md"), "utf8").catch(() => "");
+    const text = skill.md + "\n" + readme;
+    const github = /https?:\/\/github\.com\/[^\s<>()\]`"']+/.exec(text)?.[0];
+    const slug = githubSlug(github);
+    if (slug) {
+      const evidence = "skill text links to " + github;
+      if (skill.origin) skill.origin.evidence.push(evidence);
+      else skill.origin = { kind: "github", grade: "hinted", name: slug, slug, url: "https://github.com/" + slug, evidence: [evidence] };
+    }
+    const release = /https?:\/\/releases\.([^/\s]+)\/install\.sh/.exec(text);
+    const appName = skill.id.replace(/-browser$/, "").replace(/-/g, " ");
+    const app = (await fsp.readdir("/Applications").catch(() => [])).find((name) => name.replace(/\.app$/i, "").toLowerCase() === appName.toLowerCase());
+    if (release || app) {
+      const name = app ? app.replace(/\.app$/i, "") : release[1].split(".")[0].replace(/^./, (c) => c.toUpperCase());
+      const evidence = [...(release ? ["skill text links to " + release[0]] : []), ...(app ? ["matching app exists at /Applications/" + app] : [])];
+      if (skill.origin) skill.origin.evidence.push(...evidence);
+      else skill.origin = { kind: "app", grade: "hinted", name, url: release?.[0], evidence };
+    }
+    skill.origin ||= { kind: "unknown", grade: "unknown", name: "unknown", evidence: ["no recorded or matched Origin found"] };
+    if (skill.frontmatter.version) skill.origin.version = skill.frontmatter.version;
+    if (skill.frontmatter.license) skill.origin.evidence.push("skill declares license " + skill.frontmatter.license);
   }
-  const merged = new Map(); for (const [id, copies] of seen) merged.set(id, mergeCopies(copies));
-  const installs = [];
-  const taken = new Set();
-  // Several roots may carry the same Bench manifest (a shared root and a per-agent root).
-  // One manifest set of skills is one Install; later manifests only add skills not yet taken.
-  for (const r of recorded) {
-    if (r.bench) {
-      const skills = r.bench.skills.map((id) => merged.get(id)).filter((s) => s && !taken.has(s.id));
-      if (!skills.length) { const prior = installs.find((i) => i.kind === "recorded" && i.name === "Bench install"); if (prior) prior.manifests = [...(prior.manifests || [prior.manifest]), tilde(path.join(r.manifestRoot, ".bench-install.json"))]; continue; }
-      skills.forEach((s) => taken.add(s.id));
-      installs.push({ id: "bench-" + crypto.createHash("sha1").update(skills.map((s) => s.id).join()).digest("hex").slice(0, 6), name: "Bench install", kind: "recorded", source, marks: union(skills), drift: skills.some((s) => s.drift), date: skills.map((s) => s.date).sort()[0], manifest: tilde(path.join(r.manifestRoot, ".bench-install.json")), version: r.bench.version, skills: skills.sort(byName) });
-    } else installs.push(r);
+  // A corroborating repository belongs to the recorded pack, including members whose
+  // descriptions have changed since installation. It must not split that pack.
+  const packs = new Map();
+  for (const skill of skills.filter((s) => s.origin.kind === "pack" && s.origin.url)) {
+    const origins = packs.get(skill.origin.name) || new Map();
+    origins.set(skill.origin.url, skill.origin); packs.set(skill.origin.name, origins);
   }
-  const rest = [...merged.values()].filter((s) => !taken.has(s.id));
-  installs.push(...clusterInferred(rest, source));
-  return { installs: installs.sort(byInstall), roots: rootSummaries };
+  for (const skill of skills.filter((s) => s.origin.kind === "pack" && !s.origin.url)) {
+    const origins = packs.get(skill.origin.name);
+    if (origins?.size === 1) {
+      const matched = [...origins.values()][0];
+      skill.origin = { ...skill.origin, slug: matched.slug, url: matched.url,
+        evidence: [...new Set([...skill.origin.evidence, ...matched.evidence])] };
+    }
+  }
 }
 
 export async function scan({ project = process.cwd(), agent = "claude-code" } = {}) {
-  const projectPath = path.resolve(project);
-  const proj = await resolveSource(projectRoots(projectPath), "project");
-  const dev = await resolveSource(deviceRoots(), "device");
-  const plugins = await pluginInstalls();
-  const pluginRoot = { path: tilde(path.join(HOME, ".claude", "plugins")), exists: plugins.length > 0, skills: plugins.reduce((a, p) => a + p.skills.length, 0), note: plugins.length + " plugin" + (plugins.length === 1 ? "" : "s") + " with skills" };
-  const installs = [...proj.installs, ...dev.installs, ...plugins.sort(byInstall)];
-  for (const i of installs) for (const s of i.skills) { if (s.dir) { s.path = tilde(s.dir); delete s.dir; } delete s.installedDay; delete s.rootDir; }
+  const projectPath = path.resolve(project), records = [];
+  const lock = await readRecord(path.join(HOME, ".agents", ".skill-lock.json"), "Agent Skills CLI lockfile", records, (d) => Object.keys(d.skills || {}).length);
+  const proj = await collectSource(projectRoots(projectPath), "project", records, lock);
+  const dev = await collectSource(deviceRoots(), "device", records, lock);
+  const plugins = await pluginSkills(records);
+  // Plugin identity is separate from ordinary roots; copies within a plugin still merge.
+  const pluginCopies = new Map();
+  for (const skill of plugins) { const key = originKey(skill.origin) + "|" + skill.id; const copies = pluginCopies.get(key) || []; copies.push(skill); pluginCopies.set(key, copies); }
+  dev.skills.push(...[...pluginCopies.values()].map(mergeCopies));
+  await resolveOrigins([...proj.skills, ...dev.skills]);
+  const pluginRoot = { path: tilde(path.join(HOME, ".claude", "plugins")), exists: await exists(path.join(HOME, ".claude", "plugins")), skills: plugins.length, note: new Set(plugins.map((s) => originKey(s.origin))).size + " plugins with skills" };
+  const installs = [...groupOrigins(proj.skills, "project"), ...groupOrigins(dev.skills, "device")];
+  for (const install of installs) for (const skill of install.skills) {
+    if (skill.dir) { skill.path = tilde(skill.dir); delete skill.dir; }
+    delete skill.installedDay; delete skill.rootDir; delete skill.system;
+  }
   return {
     project: path.basename(projectPath), projectPath: tilde(projectPath), realProjectPath: projectPath,
     scanned: new Date().toISOString(), agent, agentName: AGENTS[agent] || agent,
-    installs, roots: [...proj.roots, ...dev.roots, pluginRoot]
+    installs, roots: [...proj.roots, ...dev.roots, pluginRoot], records
   };
 }
 

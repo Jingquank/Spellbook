@@ -13,6 +13,7 @@ export function App() {
   const survey = useSurvey((s) => s.survey);
   const error = useSurvey((s) => s.error);
   const width = usePrefs((p) => p.width), text = usePrefs((p) => p.text);
+  useEffect(() => { if (survey) document.title = survey.project + " · Spellbook"; }, [survey?.project]);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => { document.body.dataset.width = width; document.documentElement.style.setProperty("--sb-type-reader-body", text + "px"); }, [width, text]);
 

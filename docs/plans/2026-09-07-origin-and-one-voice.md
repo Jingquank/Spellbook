@@ -348,3 +348,10 @@ metadata). Delete the `.fo` media query. Sizes come from the chosen treatment in
 - ADRs: [0002](../adr/0002-browser-tab-reads-agent-writes.md),
   [0003](../adr/0003-react-vite-tab-served-by-node-skill.md),
   [0004](../adr/0004-group-installs-by-origin-evidence.md).
+
+## Execution — 2026-09-08
+
+Areas 1–6 implemented with treatment A selected by the owner. Verification results, current
+corpus differences and the desktop visual-inspection limitation are recorded in
+[the verification report](../verification/2026-09-08-origin-and-one-voice.md).
+The handoff state and expected table above describe the original interview snapshot.

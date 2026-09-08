@@ -3,22 +3,16 @@ import { persist } from "zustand/middleware";
 import type { Install, Note, Page, Survey } from "./types";
 
 /* ---- preferences: kept in the browser, per device ---- */
-export type Register = "prose" | "mono";
-interface Prefs { register: Register; width: "focused" | "wide"; text: 14 | 15 | 16; setRegister: (r: Register) => void; setWidth: (w: "focused" | "wide") => void; setText: (t: 14 | 15 | 16) => void }
+interface Prefs { width: "focused" | "wide"; text: 14 | 15 | 16; setWidth: (w: "focused" | "wide") => void; setText: (t: 14 | 15 | 16) => void }
 export const usePrefs = create<Prefs>()(persist((set) => ({
-  register: "prose", width: "focused", text: 15,
-  setRegister: (register) => set({ register }), setWidth: (width) => set({ width }), setText: (text) => set({ text })
-}), { name: "spellbook.prefs" }));
-
-/* ---- group state: names and dismissals for Inferred Installs, per project ---- */
-interface Groups { renames: Record<string, string>; dismissed: string[]; rename: (id: string, name: string) => void; dismiss: (id: string) => void; restore: (id: string) => void; reset: () => void }
-export const useGroups = create<Groups>()(persist((set) => ({
-  renames: {}, dismissed: [],
-  rename: (id, name) => set((s) => ({ renames: { ...s.renames, [id]: name } })),
-  dismiss: (id) => set((s) => ({ dismissed: s.dismissed.includes(id) ? s.dismissed : [...s.dismissed, id] })),
-  restore: (id) => set((s) => { const renames = { ...s.renames }; delete renames[id]; return { renames, dismissed: s.dismissed.filter((x) => x !== id) }; }),
-  reset: () => set({ renames: {}, dismissed: [] })
-}), { name: "spellbook.groups." + location.pathname }));
+  width: "focused", text: 15,
+  setWidth: (width) => set({ width }), setText: (text) => set({ text })
+}), { name: "spellbook.prefs", version: 1,
+  migrate: (value) => { const old = value as Partial<Prefs>; return { width: old.width === "wide" ? "wide" : "focused", text: [14, 15, 16].includes(old.text || 0) ? old.text : 15 }; },
+  partialize: ({ width, text }) => ({ width, text })
+}));
+// Remove the retired browser curation state without interpreting it.
+try { for (const key of Object.keys(localStorage)) if (key.startsWith("spellbook.groups.")) localStorage.removeItem(key); } catch { /* storage may be unavailable */ }
 
 /* ---- the Survey, straight from the server ---- */
 interface SurveyState { survey: Survey | null; error: string | null; connected: boolean; agentName: string; set: (s: Survey) => void; setError: (e: string | null) => void; setConnected: (c: boolean) => void; patchSkillMd: (installId: string, skillId: string, md: string) => void }
@@ -34,21 +28,8 @@ export const useSurvey = create<SurveyState>()((set) => ({
   })
 }));
 
-/* Apply renames and dismissals to the scanned Installs. A dismissed Inferred Install becomes its skills as Loose Skills. */
-export function visibleInstalls(survey: Survey | null, groups: { renames: Record<string, string>; dismissed: string[] }): Install[] {
-  if (!survey) return [];
-  const out: Install[] = [];
-  for (const i of survey.installs) {
-    if (i.kind === "inferred" && groups.dismissed.includes(i.id)) {
-      i.skills.forEach((s) => out.push({ id: "loose-" + s.id, name: s.name, kind: "loose", source: i.source, marks: i.marks, drift: !!s.drift, date: s.date, skills: [s], fromDismissed: i.id }));
-      continue;
-    }
-    if (groups.renames[i.id]) out.push({ ...i, name: groups.renames[i.id], renamed: true, originalName: i.name });
-    else out.push(i);
-  }
-  return out;
-}
 export function installsIn(installs: Install[], source: "project" | "device"): Install[] { return installs.filter((i) => i.source === source); }
+export const installKey = (i: Install) => i.source + ":" + i.id;
 export type Sort = "book" | "name" | "date" | "size";
 export function sortInstalls(list: Install[], sort: Sort): Install[] {
   if (sort === "book") return list;
@@ -58,7 +39,7 @@ export function sortInstalls(list: Install[], sort: Sort): Install[] {
   if (sort === "size") c.sort((a, b) => (b.skills.length - a.skills.length) || (b.skills.reduce((x, s) => x + s.lines, 0) - a.skills.reduce((x, s) => x + s.lines, 0)));
   return c;
 }
-/* Pages follow the displayed order, in both Registers. */
+/* Pages follow the displayed order, for contents and Reader. */
 export function pagesOf(installs: Install[], sort: Sort = "book"): Page[] { const out: Page[] = []; (["project", "device"] as const).forEach((src) => sortInstalls(installsIn(installs, src), sort).forEach((i) => i.skills.forEach((s) => out.push({ install: i, skill: s })))); return out; }
 
 /* ---- the book: which page is open ---- */

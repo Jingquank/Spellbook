@@ -1,17 +1,15 @@
 import { useEffect, useMemo, useRef } from "react";
-import { pagesOf, useGroups, usePrefs, useSurvey, useUI, visibleInstalls } from "../store";
+import { pagesOf, installKey, useSurvey, useUI } from "../store";
 import { Icon } from "../icons";
 import { Contents } from "./Contents";
 import { Reader } from "./Reader";
 import { SettingsNav, SettingsPage } from "./Settings";
 
-/* The spread: contents on the left in the chosen Register, the Reader on the right, Settings as the last page. */
+/* The spread: contents on the left in one interface face, the Reader on the right, Settings as the last page. */
 export function Book() {
   const survey = useSurvey((s) => s.survey)!;
-  const groups = useGroups();
-  const register = usePrefs((p) => p.register);
   const { page, mode, sort, setPage, setMode } = useUI();
-  const installs = useMemo(() => visibleInstalls(survey, groups), [survey, groups.renames, groups.dismissed]);
+  const installs = survey.installs;
   const pages = useMemo(() => pagesOf(installs, sort), [installs, sort]);
   const N = pages.length;
   const cur = Math.min(page, Math.max(0, N - 1));
@@ -21,7 +19,7 @@ export function Book() {
   function turn(n: number) { if (n >= N) { setMode("settings"); return; } setPage(Math.max(0, n)); }
   useEffect(() => {
     function keys(e: KeyboardEvent) {
-      const t = e.target as HTMLElement; if (t.closest("input, textarea, [contenteditable]") || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement; if (t.closest("input, textarea, button, select, a, [role=tablist], [contenteditable]") || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "ArrowRight" && mode === "read") turn(cur + 1);
       if (e.key === "ArrowLeft") { if (mode === "settings") setPage(cur); else turn(cur - 1); }
       if (e.key === "Escape" && mode === "settings") setPage(cur);
@@ -32,16 +30,16 @@ export function Book() {
 
   const p = pages[cur];
   const sameName = p && p.install.skills.length === 1 && p.install.name === p.skill.name;
-  return <div className={"gr bk " + (register === "mono" ? "fo" : "gr2")}>
+  return <div className="gr bk">
     <div className="gr-book">
       <section className="gr-page l">
         {mode === "settings" ? <SettingsNav survey={survey} onBack={() => setPage(cur)} />
-          : <Contents installs={installs} pages={pages} page={cur} onOpen={setPage} projectPath={survey.projectPath} mono={register === "mono"} />}
+          : <Contents installs={installs} pages={pages} page={cur} onOpen={setPage} projectPath={survey.projectPath} project={survey.project} />}
       </section>
       <section className="gr-page r">
         {mode === "settings" ? <SettingsPage survey={survey} pageLabel={pageLabel} /> : <>
           <div className="gr-run"><span className="rh">{sameName ? "" : p?.install.name}</span><span className="rh">{p?.skill.name}</span></div>
-          <div className="gr-mount" ref={mountRef}>{p ? <Reader key={p.install.id + "/" + p.skill.id} install={p.install} skill={p.skill} mode="main" /> : <div className="empty" style={{ padding: 24 }}>Nothing to read yet. Skills that appear in the roots show up here after a rescan.</div>}</div>
+          <div className="gr-mount" ref={mountRef}>{p ? <Reader key={installKey(p.install) + "/" + p.skill.id} install={p.install} skill={p.skill} mode="main" /> : <div className="empty" style={{ padding: 24 }}>Nothing to read yet. Skills that appear in the roots show up here after a rescan.</div>}</div>
         </>}
         <div className="gr-ft">
           <button type="button" className="btn quiet" disabled={mode === "read" && cur <= 0} onClick={() => (mode === "settings" ? setPage(N - 1) : turn(cur - 1))}>‹ Previous</button>

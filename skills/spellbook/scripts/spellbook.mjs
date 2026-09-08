@@ -16,25 +16,50 @@ function arg(name, def) { const i = process.argv.indexOf(name); return i > -1 ? 
 const project = path.resolve(arg("--project", process.cwd()));
 function stateFile() { return path.join(os.tmpdir(), "spellbook", crypto.createHash("sha1").update(project).digest("hex").slice(0, 10) + ".json"); }
 function readState() { try { return JSON.parse(fs.readFileSync(stateFile(), "utf8")); } catch { return null; } }
-async function alive(st) { if (!st) return false; try { const r = await fetch(st.url + "api/health"); return r.ok; } catch { return false; } }
+async function health(st) {
+  if (!st) return null;
+  try {
+    const r = await fetch(st.url + "api/health", { signal: AbortSignal.timeout(2000) });
+    const h = r.ok ? await r.json() : null;
+    return h && h.pid === st.pid ? h : null;
+  } catch { return null; }
+}
+async function alive(st) { return !!(await health(st)); }
+function allStates() {
+  const dir = path.dirname(stateFile());
+  return fs.readdirSync(dir, { withFileTypes: true }).filter(e => e.isFile() && e.name.endsWith(".json")).flatMap(e => {
+    try { return [JSON.parse(fs.readFileSync(path.join(dir, e.name), "utf8"))]; } catch { return []; }
+  });
+}
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 if (!fs.existsSync(SERVER)) { console.error("Spellbook server not found at " + SERVER + ". Install the skill as a symlink into the Spellbook repo, or pass --repo."); process.exit(2); }
 
-if (cmd === "start") {
+if (process.argv.includes("--all") && ["status", "stop"].includes(cmd)) {
+  let states; try { states = allStates(); } catch { states = []; }
+  let count = 0;
+  for (const st of states) {
+    const h = await health(st); if (!h) continue;
+    count++;
+    console.log(st.project + " · " + st.url + " · pid " + st.pid + " · " + (h.clients ?? "unknown") + " clients");
+    if (cmd === "stop") await fetch(st.url + "api/shutdown", { method: "POST" });
+  }
+  console.log(cmd === "stop" ? "Stopped " + count + " servers." : count + " live servers.");
+} else if (cmd === "start") {
   let st = readState();
   if (!(await alive(st))) {
     const args = [SERVER, "--project", project];
+    for (const flag of ["--idle", "--port"]) { const value = arg(flag, null); if (value !== null) args.push(flag, value); }
     const agent = arg("--agent", null); if (agent) args.push("--agent", agent);
     if (process.argv.includes("--no-open")) args.push("--no-open");
     const child = spawn(process.execPath, args, { detached: true, stdio: "ignore", cwd: REPO });
     child.unref();
-    for (let i = 0; i < 60; i++) { await sleep(150); st = readState(); if (await alive(st)) break; }
+    for (let i = 0; i < 300; i++) { await sleep(150); st = readState(); if (await alive(st)) break; }
     if (!(await alive(st))) { console.error("Spellbook did not start. Run: node " + SERVER + " --project " + project); process.exit(1); }
     console.log("Spellbook is open at " + st.url + " (pid " + st.pid + ").");
   } else {
     console.log("Spellbook is already running at " + st.url + ".");
-    if (!process.argv.includes("--no-open")) { const c = process.platform === "darwin" ? ["open", st.url] : process.platform === "win32" ? ["cmd", "/c", "start", "", st.url] : ["xdg-open", st.url]; try { spawn(c[0], c.slice(1), { stdio: "ignore", detached: true }).unref(); } catch { } }
+    if (!process.argv.includes("--no-open") && (await health(st))?.clients === 0) { const c = process.platform === "darwin" ? ["open", st.url] : process.platform === "win32" ? ["cmd", "/c", "start", "", st.url] : ["xdg-open", st.url]; try { spawn(c[0], c.slice(1), { stdio: "ignore", detached: true }).unref(); } catch { } }
   }
   console.log("Now wait for Briefs with: node " + path.relative(process.cwd(), fileURLToPath(import.meta.url)) + " wait-brief");
 } else if (cmd === "wait-brief") {
@@ -60,4 +85,4 @@ if (cmd === "start") {
 } else if (cmd === "stop") {
   const st = readState(); if (!(await alive(st))) { console.log("not running"); process.exit(0); }
   await fetch(st.url + "api/shutdown", { method: "POST" }).catch(() => { }); console.log("stopped");
-} else { console.error("usage: spellbook.mjs start|wait-brief|status|rescan|stop [--project DIR] [--agent NAME] [--no-open] [--timeout S]"); process.exit(2); }
+} else { console.error("usage: spellbook.mjs start|wait-brief|status|rescan|stop [--project DIR] [--agent NAME] [--no-open] [--timeout S] [--all] [--idle MINUTES] [--port N]"); process.exit(2); }

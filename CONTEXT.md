@@ -44,7 +44,7 @@
   browser asks for a change.
   _Avoid_: payload, message, prompt.
 - **Settings**: the last spread of the book, reached by turning past the final skill or
-  from the footer. Holds Appearance, Reader, Connection, Roots and Groups.
+  from the footer. Holds Appearance, Reader, Connection, Roots, Records and Keys.
   _Avoid_: preferences, options, colophon, settings page.
 - **Survey**: the view `/spellbook` opens on, showing every Install at once. Its job
   is recall and selection, not maintenance.
