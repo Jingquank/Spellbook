@@ -34,6 +34,9 @@ Clipboard copy of a Brief remains available as a fallback for agents without the
   prompt, one audit trail: the agent's.
 - Layout state the tab owns (Canvas positions, Inferred Install names, dismissals) lives
   in browser storage keyed by project, not in the skill tree.
+  *Amended 2026-09-07 by [ADR 0004](0004-group-installs-by-origin-evidence.md): the tab keeps no
+  curation state at all. Only preferences (appearance, reader width, text size) stay in browser
+  storage.*
 - The tab is only as live as the server. Without it the Survey is still readable and
   Briefs still copy; only delivery state and reload are lost.
 - Because the agent applies edits, the Reader shows the result by reloading the file.
