@@ -2,13 +2,13 @@
 
 Date: 2026-09-07. Status: decided in a `/grill-with-docs` interview with the owner; nothing built yet
 except the glossary. This document is the handoff: any agent (Codex, Claude Code) can execute it
-from a clean session. Read [CONTEXT.md](../../CONTEXT.md) first; it already carries the new terms.
+from a clean session. Read [GLOSSARY.md](../../GLOSSARY.md) first; it already carries the new terms.
 
 ## Handoff state
 
 Done in this session, uncommitted on `main`:
 
-- `CONTEXT.md`: Install is now "the skills that share one Origin"; Origin, Recorded Origin,
+- `GLOSSARY.md`: Install is now "the skills that share one Origin"; Origin, Recorded Origin,
   Matched Origin, Hinted Origin added; Register, Recorded Install and Inferred Install removed;
   Settings no longer lists Register.
 - `docs/adr/0004-group-installs-by-origin-evidence.md`: the decision record.
@@ -312,7 +312,7 @@ metadata). Delete the `.fo` media query. Sizes come from the chosen treatment in
   "What the scanner reads" (add the lockfile, marketplaces, local repositories, text matching),
   "Command reference" (`status --all`, `stop --all`, stable port, idle exit), "Status and known
   gaps" (localStorage now persists), and the decisions list (ADR 0004).
-- `CONTEXT.md` is done. Re-read it before naming anything in code.
+- `GLOSSARY.md` is done. Re-read it before naming anything in code.
 
 ### 7. Verification
 

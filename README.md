@@ -137,7 +137,7 @@ The tab has no curation state or controls to name, dismiss or group Installs.
 
 ## Concepts
 
-The vocabulary is defined in [CONTEXT.md](CONTEXT.md); this is the short version.
+The vocabulary is defined in [GLOSSARY.md](GLOSSARY.md); this is the short version.
 
 | Term | Meaning |
 | --- | --- |
@@ -243,7 +243,7 @@ server has none.
 | `docs/adr/` | Architecture decision records. |
 | `docs/plans/` | The design brief and the implementation plan, with links to the prototype artifacts. |
 | `docs/images/` | The screenshot above. |
-| `CONTEXT.md` | The glossary. |
+| `GLOSSARY.md` | The glossary. |
 | `DESIGN.md` | How the book looks and behaves. |
 | `.claude/skills/spellbook` | A symlink to `skills/spellbook`, so this repository shows its own skill under "From this project". |
 

@@ -6,7 +6,7 @@ manager: never add grouping, renaming or dismissal controls to the tab.
 
 Read before changing anything:
 
-- `CONTEXT.md`: the glossary. Use its terms in code, tests, accessibility names and docs.
+- `GLOSSARY.md`: the glossary. Use its terms in code, tests, accessibility names and docs.
 - `DESIGN.md`: how the book looks and behaves. `design/tokens.css` holds the constants.
 - `docs/adr/`: decisions already made. Do not reverse one without a new ADR.
 - `docs/plans/`: the newest dated plan is the current work. As of 2026-09-07 that is

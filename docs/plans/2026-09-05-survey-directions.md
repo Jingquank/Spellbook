@@ -8,7 +8,7 @@ In Claude Code, Codex or Cursor the user types `/spellbook`. The skill scans the
 
 ## Decisions reached in the interview
 
-1. **A block is an Install, a slab is a skill.** The Survey presents Installs. A Loose Skill is a one-slab block; the Bench install is a six-slab block. Artwork stays with the Install, as CONTEXT.md and ADR 0001 already say.
+1. **A block is an Install, a slab is a skill.** The Survey presents Installs. A Loose Skill is a one-slab block; the Bench install is a six-slab block. Artwork stays with the Install, as GLOSSARY.md and ADR 0001 already say.
 2. **The two Sources are "From Spellbook" (the project) and "On this device".** The word *Global* is avoided: the device root holds installs for several agents, so nothing there is global to any one of them.
 3. **One Install across agent roots.** A symlinked or byte-identical copy under another agent's root is the same Install wearing another Agent Mark. A diverged copy is the same Install in a Drift state, never a second block.
 4. **Transport is a skill-launched local server the agent polls.** Clipboard copy of the Brief is the fallback. Recorded in ADR 0002.
@@ -19,7 +19,7 @@ In Claude Code, Codex or Cursor the user types `/spellbook`. The skill scans the
 9. **After a Brief is sent, Notes move to a Sent state and the Reader reloads when the file changes.** No diff view in the tab; the agent's transcript explains the change.
 10. **Ten directions get prototyped**, all sharing one Reader and one note flow. The Shelf block is a stack of slabs with the Group Thumbnail on the top face. The Canvas is auto-arranged with dragging allowed and positions kept in browser storage, never on disk.
 
-Glossary additions made during the interview: Agent Mark, Drift, Reader, Note, Brief. See CONTEXT.md.
+Glossary additions made during the interview: Agent Mark, Drift, Reader, Note, Brief. See GLOSSARY.md.
 
 ## What the Survey shows on this machine
 

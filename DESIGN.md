@@ -2,7 +2,7 @@
 
 Spellbook is a temporary interface. An agent opens it from a skill, it shows every skill Install
 on the machine as one book, and it closes when the work is done. This document records how that
-book looks and behaves. The vocabulary is [CONTEXT.md](CONTEXT.md); the constants are
+book looks and behaves. The vocabulary is [GLOSSARY.md](GLOSSARY.md); the constants are
 [design/tokens.css](design/tokens.css); the live reference is [design/index.html](design/index.html).
 
 ## Direction
